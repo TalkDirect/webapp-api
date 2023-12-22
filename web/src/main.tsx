@@ -5,7 +5,7 @@ import './index.css'
 
 // React Componants to be Routed
 import Page from './Page.tsx'
-import Media from './Media.tsx'
+import Session from './Session.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <div>
         <Routes>
           <Route path="/" element={<Page />}/>
-          <Route path="/session/*" element={<Media />}/>
+          <Route path="/session/*" element={<Session />}/>
         </Routes>
       </div>
     </BrowserRouter>

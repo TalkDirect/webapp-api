@@ -1,13 +1,33 @@
 import { FormEvent, useState } from 'react'
-import './Web.css'
+import './Page.css'
 import playDirectLogo from '/svg icon.svg'
+import { useNavigate } from 'react-router-dom';
 
 function Page() {
   // Grab a Possible Session from the Session ID, checked against API/backend
-  const [session, setSession] = useState<string>();
+  const [sessionId, setSessionId] = useState<string>();
 
-  // Boolean to Check if Host or Not, if Host do not go to session page, throw an error instead
-  const [isHost, setIsHost] = useState(false);
+  // Boolean to Check if button is pressed or not for joining session
+  const [Error, setError] = useState(false);
+
+  const [ErrorMsg, setErrorMsg] = useState<string>();
+
+  // Allow for us to navigate from page
+  const navigate = useNavigate();
+
+  async function HandleError(errorType:number) {
+    setError(true);
+
+    switch (errorType) {
+      case 0:
+        setErrorMsg("Session Does not exist, please try again!")
+        break;
+    
+      default:
+        setErrorMsg("RANDOM ERROR CONTACT OWNERS")
+        break;
+    }
+  }
 
   // Grabs SessionID from form and sends it off to the API
   async function HandleSubmit(e:FormEvent) {
@@ -20,21 +40,22 @@ function Page() {
     const formJson = Object.fromEntries(formData.entries());
 
     // Send a GET Request to attempt to join the session via the ID, if returns a valid code, join it
-    const session = formJson['sessionid'] as string;
-
-    const response = await fetch(`http://localhost:9999/api/join/${session}`, {
+    const sessionAttempt = formJson['sessionid'] as string;
+    const response = await fetch(`http://localhost:9999/api/join/${sessionAttempt}`, {
         method: 'GET',
     });
 
     // Return and for now save sessionid to session and console print it out
     const data = await response.json();
-    setSession(data.sessionid);
+    setSessionId(data['sessionid']);
     console.log(data);
 
-    // Route to the session page with the correct ID
-    
-
-
+    // Route to the session page if all checks have worked and nothing is wrong
+    if (response.status == 202) {
+      navigate(`/session/${sessionId}`, { replace: true});
+    } else {
+      console.log("Undefined SessionID")
+    }
   }
 
   return (

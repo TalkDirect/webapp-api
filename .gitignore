@@ -1,7 +1,7 @@
 
 # dependencies
 web/node_modules
-server/main/node_modules
+server/node_modules
 
 # production
 web/build
