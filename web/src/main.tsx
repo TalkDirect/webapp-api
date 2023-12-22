@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <div>
         <Routes>
           <Route path="/" element={<Page />}/>
-          <Route path="/session/*" element={<Session />}/>
+          <Route path="/session/:sessionid" element={<Session />}/>
         </Routes>
       </div>
     </BrowserRouter>
