@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import { Session } from "./modules/Session"
 
 
@@ -24,7 +24,18 @@ function JoinSession(sessionid: string, ip: string) {
 
 }
 
-app.get("/api/host/sid=:sessionid", (req: Request, res: Response) => {
+function ConfigureCORSHeaders(res: Response) {
+	res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+	res.header("Access-Control-Allow-Methods", "POST, GET")
+}
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+	ConfigureCORSHeaders(res);
+	next();
+})
+
+
+app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 
@@ -53,7 +64,7 @@ app.get("/api/host/sid=:sessionid", (req: Request, res: Response) => {
 
 });
 
-app.get("/api/join/sid=:sessionid", (req: Request, res: Response) => {
+app.get("/api/join/:sessionid", (req: Request, res: Response) => {
 	
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 		

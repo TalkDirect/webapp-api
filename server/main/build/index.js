@@ -20,7 +20,15 @@ function JoinSession(sessionid, ip) {
     }
     return false;
 }
-app.get("/api/host/sid=:sessionid", (req, res) => {
+function ConfigureCORSHeaders(res) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.header("Access-Control-Allow-Methods", "POST, GET");
+}
+app.use((req, res, next) => {
+    ConfigureCORSHeaders(res);
+    next();
+});
+app.get("/api/host/:sessionid", (req, res) => {
     if (req.params.sessionid !== undefined && req.ip !== undefined) {
         let sessionid = req.params.sessionid;
         let ip = req.ip;
@@ -38,7 +46,7 @@ app.get("/api/host/sid=:sessionid", (req, res) => {
     }
     res.status(400).send();
 });
-app.get("/api/join/sid=:sessionid", (req, res) => {
+app.get("/api/join/:sessionid", (req, res) => {
     if (req.params.sessionid !== undefined && req.ip !== undefined) {
         let sessionid = req.params.sessionid;
         let ip = req.ip;
