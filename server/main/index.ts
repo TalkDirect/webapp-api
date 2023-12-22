@@ -7,7 +7,7 @@ var allSessions = new Map<string, Session>();
 
 function CreateNewSession(sessionid: string) {
 
-	let newsession: Session = new Session();
+	let newsession: Session = new Session(sessionid);
 	allSessions.set(sessionid, newsession);
 	return newsession
 

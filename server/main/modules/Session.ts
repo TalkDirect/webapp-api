@@ -5,8 +5,12 @@ interface Client {
 
 export class Session {
 
-	sessionid: string = "123abc";
+	sessionid: string;
 	clients: Array<Client> = [];
+
+	constructor(currentSessionid: string) {
+		this.sessionid = currentSessionid;
+	}
 
 	AddClient(address: string) {
 		//Create a new client and add to array of currently connected clients
