@@ -4,3 +4,7 @@ web/node_modules
 
 # production
 web/build
+
+# sublime text related environment settings
+*.sublime-project
+*.sublime-workspace
