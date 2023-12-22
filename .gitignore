@@ -1,0 +1,6 @@
+
+# dependencies
+web/node_modules
+
+# production
+web/build
