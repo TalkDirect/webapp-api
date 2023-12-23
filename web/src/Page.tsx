@@ -70,7 +70,7 @@ function Page() {
           <form className='session-card-form' method='GET' onSubmit={HandleSubmit}>
             <label htmlFor="sessionid">Session ID:</label>
             <input type='text' name='sessionid' id='sessionid'/><br/>
-            <input type='submit' className='submit-button' value='Go'/>
+            <input type='submit' className='submit-button' id='submit-button' value='Go'/>
           </form>
       </div>
       <div>

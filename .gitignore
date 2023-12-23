@@ -3,6 +3,12 @@
 web/node_modules
 server/node_modules
 
+# test venv
+tests/Include
+tests/Lib
+tests/Scripts/
+tests/pyvenv.cfg
+
 # production
 web/build
 server/main/build
