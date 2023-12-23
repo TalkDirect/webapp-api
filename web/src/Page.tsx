@@ -2,8 +2,13 @@ import { FormEvent, useState } from 'react'
 import './Page.css'
 import playDirectLogo from '/svg icon.svg'
 import { useNavigate } from 'react-router-dom';
+import { useCookie } from './cookie';
 
 function Page() {
+
+  // The state that'll be saved to cookies
+  const [WebsocketUrl, setWebsocketUrl] = useCookie('Websocket-url', '');
+
   // Boolean to Check if button is pressed or not for joining session
   const [error, seterror] = useState(false);
 
@@ -18,14 +23,15 @@ function Page() {
 
     switch (errorType) {
       case 0:
-        setErrorMsg("Session Does not exist, please try again!")
+        setErrorMsg("Session Does not exist, please try again!");
         break;
     
       default:
-        setErrorMsg("RANDOM ERROR CONTACT OWNERS")
+        setErrorMsg("RANDOM ERROR CONTACT OWNERS");
         break;
     }
   }
+
 
   // Grabs SessionID from form and sends it off to the API
   async function HandleSubmit(e:FormEvent) {
@@ -38,19 +44,23 @@ function Page() {
 
       const formJson = Object.fromEntries(formData.entries());
 
-      // Send a GET Request to attempt to join the session via the ID, if returns a valid code, join it
+      // Send a GET Request to attempt to see if a valid session exists with that ID, if not throw an error
       const sessionAttempt = formJson['sessionid'] as string;
-      const response = await fetch(`http://localhost:9999/api/join/${sessionAttempt}`, {
+      const response:Response = await fetch(`http://localhost:9999/api/find/${sessionAttempt}`, {
           method: 'GET',
       });
 
-      // Route to the session page if all checks have worked and nothing is wrong, if something wrong throw an error
-      if (response.status == 202) {
-        navigate(`/session/${formJson['sessionid']}`, { replace: true});
-      } else {
+      //
+      if (response.status !== 202) {
         throw new Error();
-        
       }
+
+      // Now, save that websocket to be used on the next page
+      const data = await response.json();
+      setWebsocketUrl(data['socketinfo']);
+
+      navigate(`/session/${formJson['sessionid']}`, { replace: true});
+
    } catch (error) {
       // Throw a no SessionID Error
       HandleError(0);

@@ -6,6 +6,7 @@ const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
 const API_PORT = 9999
 const SOCKET_PORT = 9998
+const WS_URL = `ws://localhost:${SOCKET_PORT}/`
 
 const app: Express = express();
 var allSessions = new Map<string, Session>();
@@ -45,7 +46,7 @@ async function tryRetrieveSession(sessionid: string, maxRetries = 3, currentRetr
 	
 	var mysession: Session | undefined = RetrieveSession(sessionid); // Try and retrieve a session
 
-	if (mysession === undefined) { 
+	if (mysession == undefined) { 
 
 		if (currentRetries < maxRetries) {
 
@@ -81,11 +82,11 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 	let sessionid: string = req.url.substring(1); // the URL of a connection is localhost:PORT/[sessionid]. this grabs the sessionid from the end of the URL
 
 	let clientaddress: string = "::1" //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
-	if (req.connection.remoteAddress !== undefined) {
-		clientaddress = req.connection.remoteAddress;
+	if (req.socket.remoteAddress !== undefined) {
+		clientaddress = req.socket.remoteAddress;
 	}
 
-	tryRetrieveSession(sessionid); // Attempt to find a session
+	tryRetrieveSession(sessionid) // Attempt to find a session
 	.then((mysession: Session) => {
 		// Begin accepting messages from client
 
@@ -103,7 +104,7 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 			mysession.RemoveClient(clientaddress);
 		})
 
-	}).catch((err) => {
+	}).catch((err:Error) => {
 		//An error is thrown if tryRetrieveSession is unable to find a session.
 
 		//Close the connection
@@ -205,6 +206,7 @@ app.get("/api/find/:sessionid", (req: Request, res: Response) => {
 				{
 					status: "Successfully Retrieved session",
 					sessionid: req.params.sessionid,
+					socketinfo: WS_URL+sessionid,
 					host: session.clients[0],
 					clients: session.clients,
 				}
