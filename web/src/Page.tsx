@@ -61,13 +61,13 @@ function Page() {
     <>
       <div>
           <a href="https://github.com/Chieffz/PlayDirect" target="_blank">
-              <img src={playDirectLogo} className="logo" alt="PlayerDirect logo" />
+              <img src={playDirectLogo} className="logo" id="logo" alt="PlayerDirect logo" />
           </a>
       </div>
       <h1> PlayDirect</h1>
       <div className='session-card'>
         <p> Enter your Session ID Here!</p>
-          <form className='session-card-form' method='GET' onSubmit={HandleSubmit}>
+          <form className='session-card-form' id="session-form" method='GET' onSubmit={HandleSubmit}>
             <label htmlFor="sessionid">Session ID:</label>
             <input type='text' name='sessionid' id='sessionid'/><br/>
             <input type='submit' className='submit-button' id='submit-button' value='Go'/>
