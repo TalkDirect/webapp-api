@@ -1,11 +1,16 @@
 import express, { Express, Request, Response, NextFunction } from "express";
+import websocket, { WebSocket, WebSocketServer, RawData } from "ws";
 import { Session } from "./modules/Session"
 
-const CORS_ORIGINS = "http://localhost:5173"
+const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
+const API_PORT = 9999
+const SOCKET_PORT = 9998
 
 const app: Express = express();
 var allSessions = new Map<string, Session>();
+var socket = new WebSocketServer({ port: SOCKET_PORT });
+
 
 // Simple Session Retrieval Function
 function RetrieveSession(sessionid: string) {
@@ -15,7 +20,7 @@ function RetrieveSession(sessionid: string) {
 }
 
 //Create a new session object that will hold client connection info
-function CreateNewSession(sessionid: string) {
+function CreateNewSession(sessionid: string): Session {
 
 	let newsession: Session = new Session(sessionid);
 	allSessions.set(sessionid, newsession); // add session to session map
@@ -23,16 +28,99 @@ function CreateNewSession(sessionid: string) {
 
 }
 
-function JoinSession(sessionid: string, ip: string) {
+//Attempt to add client IP to a session
+function JoinSession(sessionid: string, ip: string): boolean {
 
 	var desiredsession = RetrieveSession(sessionid); // Attempt to find session
 	if (desiredsession !== undefined) {
 		desiredsession.AddClient(ip); // Add client if session exists
-		return true; //Return if the session was joined successfully or not
+		return true; // Return if the session was joined successfully or not
 	}
 	return false;
 
 }
+
+//Attempt to retrieve session asyncronously with a set amount of retries.
+async function tryRetrieveSession(sessionid: string, maxRetries = 3, currentRetries = 0) : Promise<Session> {
+	
+	var mysession: Session | undefined = RetrieveSession(sessionid); // Try and retrieve a session
+
+	if (mysession === undefined) { 
+
+		if (currentRetries < maxRetries) {
+
+			// If session does not exist, and there are retries left, recursively call tryRetrieveSession to start another attempt.
+
+			console.log("Session not found, trying again in 3 seconds...");
+			await new Promise((resolve) => {setTimeout(resolve, 3000)}); // goofy ass 3 second delay
+			mysession = await tryRetrieveSession(sessionid, maxRetries, currentRetries + 1);
+
+		} else {
+
+			//Throw an error to be caught and handled by whatever is attempting to retrieve a session.
+
+			console.log("Session could not be found.");
+			throw new Error("Failed to find a session after 3 tries");
+
+		}
+
+	}
+
+	// If another attempt hasnt been made, we can assume that the session has been found and we can return it
+	return mysession;
+
+}
+
+
+
+
+// SESSION SOCKET 
+
+socket.on("connection", (clientsocket: WebSocket, req: Request) => {
+
+	let sessionid: string = req.url.substring(1); // the URL of a connection is localhost:PORT/[sessionid]. this grabs the sessionid from the end of the URL
+
+	let clientaddress: string = "::1" //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
+	if (req.connection.remoteAddress !== undefined) {
+		clientaddress = req.connection.remoteAddress;
+	}
+
+	tryRetrieveSession(sessionid); // Attempt to find a session
+	.then((mysession: Session) => {
+		// Begin accepting messages from client
+
+		console.log("Accepting messages.");
+		mysession.AddClient(clientaddress);
+		clientsocket.send(1); // Placeholder "Accepted" code
+
+		//Start recieving network messages
+		clientsocket.on("message", (data: RawData) => {
+			let sessionid = data.toString();
+			console.log(data.toString());
+		})
+
+		clientsocket.on("close", () => {
+			mysession.RemoveClient(clientaddress);
+		})
+
+	}).catch((err) => {
+		//An error is thrown if tryRetrieveSession is unable to find a session.
+
+		//Close the connection
+		console.log("Session retrival failiure. Closing connection...");
+
+		//Close and deallocate socket
+		clientsocket.close();
+		clientsocket.terminate();
+
+	})
+
+})
+
+
+
+
+//HTML API ENDPOINT
 
 //Configure CORS headers for a single response
 function ConfigureCORSHeaders(res: Response) {
@@ -57,11 +145,9 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 
 		//create new session
 		let newsession = CreateNewSession(sessionid);
+		console.log("Created session " + sessionid);
 
-		//attempt to join newly created session
-		let success = JoinSession(sessionid, req.ip);
-
-		if (success) {
+		if (newsession) {
 			res.status(201).json(
 				{
 					status: "Successfully created session",
@@ -133,6 +219,6 @@ app.get("/api/find/:sessionid", (req: Request, res: Response) => {
 });
 
 //Begin the server
-app.listen(9999, () => {
+app.listen(API_PORT, () => {
 	console.log("server started");
 });

@@ -22,10 +22,10 @@ export class Session {
 	RemoveClient(address: string) {
 		//find client within array, and remove them
 		for (let i = 0; i < this.clients.length; i++) {
-			if (this.clients[i].address = address) {
+			if (this.clients[i].address == address) {
 				this.clients.splice(i-1, i);
 				console.log("Removed client " + address);
-				break;
+				return;
 			}
 		}
 		console.log("Remove client " + address + " failed.");
