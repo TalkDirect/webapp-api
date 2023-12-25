@@ -96,15 +96,11 @@ function Session() {
         //
         sessionSocket.createSocket(url);
         sessionSocket.onMessage((e:any) => {
-            console.log(e.data);
+            //console.log(e.data);
             HostData.append(e.data);
             console.log(HostData.toString());
             setRecievedData(true);
         });
-    }
-
-    function HandleClientData(data:any) {
-        sessionSocket.sendMessage(data);
     }
 
     // Attempt to grab the session media from the host/api
@@ -137,9 +133,13 @@ function Session() {
     // aka final stage of data is processedData
     useEffect(() => {
         do {
-            setProcessedData([...processedData, HostData.pop()]);
+            /*
+            Plan to fix problem w/ processData: traverse LL and for each node's data put into processedData maybe by editing array below
+            */
+            setProcessedData(processedData => [...processedData, HostData.pop()]);
             console.log(processedData)
         } while(!HostData.isEmpty)
+        setRecievedData(false);
     }, [recievedData])
 
     return (

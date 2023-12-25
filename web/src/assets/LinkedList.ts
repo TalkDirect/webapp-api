@@ -25,17 +25,23 @@ export class LinkedList<T> {
         return targetNode;
     }
     
+    // Retrieve Node at End of LL
     private retrieveAtEnd() {
         if (this.head == null) {
             return;
         }
-
-        // this is pretty much a recursive fun, if true condition (statement after ?)
-        const getLast = (node: LL_Node<T>): LL_Node<T> => {
-            return node.next ? getLast(node.next) : node;
+        if (this.head.next == null) {
+            const curr = this.head;
+            this.head.next = null;
+            return curr;
         }
-        
-        return getLast(this.head);
+        let curr:LL_Node<T> = this.head;
+		while (curr.next!.next != null)
+		{
+			curr = curr.next!;
+		}
+		curr.next = null;
+		return curr;
     }
 
     public append(data:T) {
@@ -64,15 +70,6 @@ export class LinkedList<T> {
             curr = curr!.next;
             
         } while(curr!.next != null)
-
-        /* some code i thought would work did not infact work.
-        const toString = (curr:LL_Node<T>): string => {
-            const data = curr?.data;
-            string = string + " " + data + " -> ";
-            return curr.next ? toString(curr.next) : string;
-        }
-        return toString;
-        */
         return string;
     }
 
