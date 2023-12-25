@@ -45,7 +45,7 @@ export const useSocket = () => {
 
 export class useSocket {
 
-    socket: Websocket | null = null;
+    socket: WebSocket | null = null;
 
     createSocket(socketUrl:string) {
         if (this.socket !== null) return;
@@ -54,7 +54,7 @@ export class useSocket {
 
     closeSocket() {
         if (this.socket == null) return;
-        this.socket.close()
+        this.socket.close();
     }
 
     onConnection() {
@@ -64,12 +64,18 @@ export class useSocket {
         }
     }
 
-    onMessage(callback) {
+    onMessage(callback:any) {
         if (this.socket == null) return;
         this.socket.onmessage = (Event) => {
-            console.log("gotmessage")
-            callback(Event)
+            console.log("gotmessage");
+            callback(Event);
         }
+    }
+
+    sendMessage(data:any) {
+        if (this.socket == null) return;
+        this.socket.send(data);
+        console.log('sentmessage');
     }
 
 }

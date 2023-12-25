@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './Session.css'
 import { useParams } from 'react-router-dom'
 import { useCookie } from './cookie';
 import { useSocket } from './WebSocketService';
+import { LinkedList } from './assets/LinkedList';
 //import WebSocket from 'ws';
-
 
 // Attempt to grab the session media from the host/api
 interface FetchSessionResponse {
@@ -17,6 +17,8 @@ interface FetchSessionResponse {
 var isFetchingSession = false;
 var hasFetchedSession = false;
 var sessionSocket = new useSocket();
+const HostData= new LinkedList<any>(null);
+
 
 //FetchSession functionality
 async function FetchSession(sessionid: string): Promise<FetchSessionResponse> {
@@ -34,24 +36,15 @@ async function FetchSession(sessionid: string): Promise<FetchSessionResponse> {
         }
 
         // Return response data w/ FetchSessionResponse
-        return {host: data.host, clients: data.clients}
+        return {host: data.host, clients: data.clients, errorCode: undefined}
 
     } catch (error) {
-        return {errorCode: '0'} // skill issue
+        return {host: undefined, clients: undefined, errorCode: '0'} // skill issue
     }
 
 }
 
-function ActivateSessionSocket(url: string) {
-    //Create and hook onMessage with simple print statement
-    sessionSocket.createSocket(url);
-    sessionSocket.onMessage((e) => {
-        console.log(e.data)
-    })
-}
-
 function Session() {
-
     // Grab the current session of the User
     const {sessionid} = useParams();
 
@@ -66,6 +59,12 @@ function Session() {
 
     // Signifies a Valid Websocket Connection
     const [Connection, setConnection] = useState<boolean>(false);
+
+    // Signifies that data has been sent
+    const [recievedData, setRecievedData] = useState<boolean>(false);
+
+    // Data
+    const [processedData, setProcessedData] = useState<any[]>([]);
 
     // Used to exclaim an error has occured
     const [error, seterror] = useState(false);
@@ -92,10 +91,26 @@ function Session() {
     }
 
 
+    function ActivateSessionSocket(url: string) {
+        //Create and hook onMessage with simple print statement
+        //
+        sessionSocket.createSocket(url);
+        sessionSocket.onMessage((e:any) => {
+            console.log(e.data);
+            HostData.append(e.data);
+            console.log(HostData.toString());
+            setRecievedData(true);
+        });
+    }
+
+    function HandleClientData(data:any) {
+        sessionSocket.sendMessage(data);
+    }
+
     // Attempt to grab the session media from the host/api
 
     const FetchSessionState = async () => {
-        if (isFetchingSession == true || hasFetchedSession == true) return; //guard clause - only fetch session if we are not fetching a session and we arent currently in a valid session
+        if (isFetchingSession == true || hasFetchedSession == true || sessionid == undefined) return; //guard clause - only fetch session if we are not fetching a session and we arent currently in a valid session
 
         isFetchingSession = true; // make sure we cant fetch another session
 
@@ -109,6 +124,7 @@ function Session() {
         hasFetchedSession = true; // we have valid session information, disable any future fetches
         setHost(fsr.host);
         setClients(fsr.clients);
+        setConnection(true);
         ActivateSessionSocket(WebsocketUrl);
     }
 
@@ -116,6 +132,15 @@ function Session() {
     useEffect(() => {
         FetchSessionState();
     },[])
+
+    // Main purpose is to process all data held in const HostData and move it to processedData where it'll be used in react comp render
+    // aka final stage of data is processedData
+    useEffect(() => {
+        do {
+            setProcessedData([...processedData, HostData.pop()]);
+            console.log(processedData)
+        } while(!HostData.isEmpty)
+    }, [recievedData])
 
     return (
     <>

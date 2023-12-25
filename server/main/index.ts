@@ -93,6 +93,9 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 		console.log("Accepting messages.");
 		mysession.AddClient(clientaddress);
 		clientsocket.send(1); // Placeholder "Accepted" code
+		clientsocket.send(2);
+		clientsocket.send(3);
+		clientsocket.send(4);
 
 		//Start recieving network messages
 		clientsocket.on("message", (data: RawData) => {
