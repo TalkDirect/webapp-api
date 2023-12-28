@@ -13,6 +13,13 @@ var allSessions = new Map<string, Session>();
 var socket = new WebSocketServer({ port: SOCKET_PORT });
 const PacketData = [];
 
+enum DataIdentifier {
+	VIDEO = 0,
+	AUDIO = 1,
+	STRING = 2,
+	ERROR = 3,
+};
+
 
 // Simple Session Retrieval Function
 function RetrieveSession(sessionid: string) {
@@ -97,25 +104,17 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 		clientsocket.send(4);
 
 		//Start recieving network messages
-		clientsocket.on("message", (data: RawData) => {
-			// If data is string just print it out on the console for now
-			if (typeof data === 'string') {
-				if (data[0] === 'error:') {
-					throw new Error('Error on the Frontend Side');
-				} else {
-					console.log(data);
-				}
-			} else {
-				// If Data not string, treat it as a file containing data
-				const filereader = new FileReader();
-				filereader.onload = (Event) => {
-					const buffer = Event.target!.result;
-					if (typeof buffer === 'string' || buffer === null) return;
-					const data = new Uint8Array(buffer);
-					console.log('')
-					PacketData.push(buffer);
-				}
+		clientsocket.on("message", (data: Buffer[]) => {
+			// Create a Uint32Bit Array to told RGB Values
+			const buffer = new Uint32Array();
+			// Loop thru the Buffer[] recieved and every 4 indexes place into an Int32Bit and place that into our bufferArray32
+			for (let i = 0; i<data.length;) {
+				let bufferIndex = Buffer.from([i, i+1, i+2, i+3]).readInt32BE(0);
+				buffer[i] = bufferIndex;
+				i += 4;
 			}
+			// Send off the buffer32Array
+			clientsocket.send(buffer);
 		})
 
 		clientsocket.on("close", () => {

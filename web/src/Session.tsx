@@ -98,12 +98,15 @@ function Session() {
     function ActivateSessionSocket(url: string) {
         //Create and hook onMessage with simple print statement
         sessionSocket.createSocket(url);
-        sessionSocket.onMessage(async (e:any) => {
-        const timer = await new Promise((resolve) => {setTimeout(resolve, 10)}); // 10ms delay to attempt to chunk data together
-        do {
-            HostData.push(e.data);
-            console.log(HostData.toString());
-        } while (timer)
+        sessionSocket.onMessage(async (data:any) => {
+        // If our data is a string for now just print on console
+        if (typeof data === "string") {
+            console.log(data);
+            setRecievedData(true);
+            return;
+        }
+        // Else our data must be rawdata for now just push to HostData array
+        HostData.push(data);
         setRecievedData(true);
         });
     }
