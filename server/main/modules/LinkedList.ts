@@ -73,13 +73,24 @@ export class LinkedList<T> {
         return string;
     }
 
+    public toArray() {
+        if (this.head == null) return;
+        let array: T[] = [];
+        do {
+            array.push(this.retrieveAtEnd()!.data!);
+        } while(this.head)
+
+        console.log(array);
+        return array
+    }
+
 }
 
 export class LL_Node<T> {
-    data:T;
+    data:T | null;
     next:LL_Node<T> | null = null;
 
-    constructor(data:T, next:LL_Node<T> | null) {
+    constructor(data:T | null, next:LL_Node<T> | null) {
         this.data = data;
         this.next = next;
     }

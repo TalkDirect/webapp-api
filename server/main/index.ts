@@ -11,6 +11,7 @@ const WS_URL = `ws://localhost:${SOCKET_PORT}/`
 const app: Express = express();
 var allSessions = new Map<string, Session>();
 var socket = new WebSocketServer({ port: SOCKET_PORT });
+const PacketData = [];
 
 
 // Simple Session Retrieval Function
@@ -73,8 +74,6 @@ async function tryRetrieveSession(sessionid: string, maxRetries = 3, currentRetr
 }
 
 
-
-
 // SESSION SOCKET 
 
 socket.on("connection", (clientsocket: WebSocket, req: Request) => {
@@ -99,8 +98,24 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 
 		//Start recieving network messages
 		clientsocket.on("message", (data: RawData) => {
-			let sessionid = data.toString();
-			console.log(data.toString());
+			// If data is string just print it out on the console for now
+			if (typeof data === 'string') {
+				if (data[0] === 'error:') {
+					throw new Error('Error on the Frontend Side');
+				} else {
+					console.log(data);
+				}
+			} else {
+				// If Data not string, treat it as a file containing data
+				const filereader = new FileReader();
+				filereader.onload = (Event) => {
+					const buffer = Event.target!.result;
+					if (typeof buffer === 'string' || buffer === null) return;
+					const data = new Uint8Array(buffer);
+					console.log('')
+					PacketData.push(buffer);
+				}
+			}
 		})
 
 		clientsocket.on("close", () => {

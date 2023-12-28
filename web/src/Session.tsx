@@ -3,7 +3,6 @@ import './Session.css'
 import { useParams } from 'react-router-dom'
 import { useCookie } from './cookie';
 import { useSocket } from './WebSocketService';
-import { LinkedList } from './assets/LinkedList';
 //import WebSocket from 'ws';
 
 // Attempt to grab the session media from the host/api
@@ -17,7 +16,7 @@ interface FetchSessionResponse {
 var isFetchingSession = false;
 var hasFetchedSession = false;
 var sessionSocket = new useSocket();
-const HostData= new LinkedList<any>(null);
+const HostData:any[] = [];
 
 
 //FetchSession functionality
@@ -63,9 +62,6 @@ function Session() {
     // Signifies that data has been sent
     const [recievedData, setRecievedData] = useState<boolean>(false);
 
-    // Data
-    const [processedData, setProcessedData] = useState<any[]>([]);
-
     // Used to exclaim an error has occured
     const [error, seterror] = useState(false);
 
@@ -89,17 +85,26 @@ function Session() {
                 break;
         }
     }
-
+    // Helper Function
+    /*const HandleSocketData = async () => {
+        if (recievedData == false || Connection == false || hasFetchedSession == false) return;
+        setRecievedData(false);
+        do {
+            setProcessedData(processedData => [...processedData, HostData.pop()?.data]);
+        } while(!HostData.isEmpty)
+        console.log(processedData)
+    }*/
 
     function ActivateSessionSocket(url: string) {
         //Create and hook onMessage with simple print statement
-        //
         sessionSocket.createSocket(url);
-        sessionSocket.onMessage((e:any) => {
-            //console.log(e.data);
-            HostData.append(e.data);
+        sessionSocket.onMessage(async (e:any) => {
+        const timer = await new Promise((resolve) => {setTimeout(resolve, 10)}); // 10ms delay to attempt to chunk data together
+        do {
+            HostData.push(e.data);
             console.log(HostData.toString());
-            setRecievedData(true);
+        } while (timer)
+        setRecievedData(true);
         });
     }
 
@@ -129,26 +134,15 @@ function Session() {
         FetchSessionState();
     },[])
 
-    // Main purpose is to process all data held in const HostData and move it to processedData where it'll be used in react comp render
-    // aka final stage of data is processedData
-    useEffect(() => {
-        do {
-            /*
-            Plan to fix problem w/ processData: traverse LL and for each node's data put into processedData maybe by editing array below
-            */
-            setProcessedData(processedData => [...processedData, HostData.pop()]);
-            console.log(processedData)
-        } while(!HostData.isEmpty)
-        setRecievedData(false);
-    }, [recievedData])
+    let dataList = HostData.map(data =>
+        <li>{data}</li>)
 
     return (
     <>
         <div>
             {
                 error ? <p>{ErrorMsg}</p> :
-                Connection ? <p> Actual Message Would Go Here</p> : 
-                <p>Connection is Loading!</p>
+                <ul>{dataList}</ul>
             }
 
         </div>
