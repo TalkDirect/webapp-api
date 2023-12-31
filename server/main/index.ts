@@ -11,13 +11,14 @@ const WS_URL = `ws://localhost:${SOCKET_PORT}/`
 const app: Express = express();
 var allSessions = new Map<string, Session>();
 var socket = new WebSocketServer({ port: SOCKET_PORT });
-const PacketData = [];
 
 enum DataIdentifier {
 	VIDEO = 0,
 	AUDIO = 1,
 	STRING = 2,
 	ERROR = 3,
+	INMSE = 4,
+	INKBD = 5,
 };
 
 
@@ -109,7 +110,13 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 			const buffer = new Uint32Array();
 			// Loop thru the Buffer[] recieved and every 4 indexes place into an Int32Bit and place that into our bufferArray32
 			for (let i = 0; i<data.length;) {
-				let bufferIndex = Buffer.from([i, i+1, i+2, i+3]).readInt32BE(0);
+				const array = new Uint8Array();
+				array.set(data[i], 0);
+				array.set(data[i+1], 1);
+				array.set(data[i+2], 2);
+				array.set(data[i+3], 3);
+				
+				const bufferIndex = Buffer.from(array, 1, 4).readInt32BE(0);
 				buffer[i] = bufferIndex;
 				i += 4;
 			}

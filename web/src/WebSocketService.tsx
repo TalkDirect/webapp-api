@@ -47,7 +47,12 @@ enum DataIdentifier {
 	AUDIO = 1,
 	STRING = 2,
 	ERROR = 3,
+    INMSEUP = 4,
+    INMSEDOWN = 5,
+    INKBDUP = 6,
+    INKBDDOWN = 7,
 };
+
 export class useSocket {
 
     socket: WebSocket | null = null;
@@ -76,6 +81,7 @@ export class useSocket {
             // Retrieve the raw data & decode the data identifier
             const buffer:Uint32Array = Event.data;
             const dataID = buffer[0];
+            // We might need to decode this
             // Just set the callback to a string if identifier says string or error
             if (dataID === DataIdentifier.STRING || dataID === DataIdentifier.ERROR) {
                 const stringMessage = new TextDecoder().decode(buffer.subarray(1));
@@ -88,8 +94,12 @@ export class useSocket {
         }
     }
 
-    sendMessage(data:any) {
+    sendMessage(data:Buffer[]) {
         if (this.socket == null) return;
-        
+        const bufferArray = new Uint8Array();
+        for (let i = 0; i<data.length; i++) {
+            bufferArray.set(data[i], i);
+        }
+        this.socket.send(bufferArray);
     }
 }

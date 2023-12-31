@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react'
 import './Session.css'
 import { useParams } from 'react-router-dom'
 import { useCookie } from './cookie';
@@ -12,6 +12,17 @@ interface FetchSessionResponse {
     errorCode: string | undefined;
 }
 
+enum DataIdentifier {
+	VIDEO = 0,
+	AUDIO = 1,
+	STRING = 2,
+	ERROR = 3,
+    INMSEUP = 4,
+    INMSEDOWN = 5,
+    INMSEMOVE = 6,
+    INKBDUP = 7,
+    INKBDDOWN = 8,
+};
 
 var isFetchingSession = false;
 var hasFetchedSession = false;
@@ -106,6 +117,7 @@ function Session() {
             return;
         }
         // Else our data must be rawdata for now just push to HostData array
+        
         HostData.push(data);
         setRecievedData(true);
         });
@@ -132,6 +144,62 @@ function Session() {
         ActivateSessionSocket(WebsocketUrl);
     }
 
+    // Attempt to grab input if window is focused, then send it off to the host/api server
+    const onKbdChange = async (Event: KeyboardEvent, EventType:string) => {
+        if (sessionid == undefined || Connection == false) return;
+
+        let bufferArray:Buffer[] = [];
+        let buffer: Buffer | Buffer[] = [];
+        let dataType: Buffer;
+
+        switch (EventType) {
+            case 'KEYUP':
+                buffer = Buffer.alloc(1, Event.key);
+                dataType = Buffer.alloc(1, DataIdentifier.INKBDUP);
+                bufferArray = [dataType, buffer];
+                break;
+            case 'KEYDWN':
+                buffer = Buffer.alloc(1, Event.key);
+                dataType = Buffer.alloc(1, DataIdentifier.INKBDDOWN);
+                bufferArray = [dataType, buffer];
+                break;
+            default:
+                break;
+        }
+        sessionSocket.sendMessage(bufferArray);
+    }
+
+    // Attempt to grab input if window is focused, then send it off to the host/api server
+    const onMseChange = async (Event: MouseEvent, EventType:string) => {
+        if (sessionid == undefined || Connection == false) return;
+
+        let bufferArray:Buffer[] = [];
+        let buffer: Buffer | Buffer[] = [];
+        let dataType: Buffer;
+
+        switch (EventType) {
+            case 'INMSEUP':
+                dataType = Buffer.alloc(1, DataIdentifier.INMSEUP);
+                buffer = Buffer.alloc(1, Event.buttons);
+                bufferArray = [dataType, buffer];
+                break;
+            case 'INMSEDOWN':
+                dataType = Buffer.alloc(1, DataIdentifier.INMSEDOWN);
+                buffer = Buffer.alloc(1, Event.buttons);
+                bufferArray = [dataType, buffer];
+                break;
+            case 'INMSEMOVE':
+                dataType = Buffer.alloc(1, DataIdentifier.INMSEMOVE);
+                buffer[0] = Buffer.alloc(4, Event.screenX);
+                buffer[1] = Buffer.alloc(4, Event.screenY);
+                bufferArray = [dataType, buffer[0], buffer[1]];
+                break;
+            default:
+                break;
+        }
+        sessionSocket.sendMessage(bufferArray);
+    }
+
     // Where we'll start to load up video and any other important details when page is first loaded
     useEffect(() => {
         FetchSessionState();
@@ -142,7 +210,13 @@ function Session() {
 
     return (
     <>
-        <div>
+        <div className='Capture-Div'
+            onKeyDown={e => onKbdChange(e, 'KEYDWN')}
+            onKeyUp={e => onKbdChange(e, 'KEYUP')}
+            onMouseDown={e => onMseChange(e, 'INMSEDWN')}
+            onMouseUp={e => onMseChange(e, 'INMSEUP')}
+            onMouseMove={e => onMseChange(e, 'INMSEUP')}
+            >
             {
                 error ? <p>{ErrorMsg}</p> :
                 <ul>{dataList}</ul>
