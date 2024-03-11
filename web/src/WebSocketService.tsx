@@ -49,8 +49,9 @@ enum DataIdentifier {
 	ERROR = 3,
     INMSEUP = 4,
     INMSEDOWN = 5,
-    INKBDUP = 6,
-    INKBDDOWN = 7,
+    INMSEMOVE = 6,
+    INKBDUP = 7,
+    INKBDDOWN = 8,
 };
 
 export class useSocket {
@@ -89,17 +90,26 @@ export class useSocket {
                 return;
             }
             // Else set callback for now to be more rawdata and let it be handled on React page
-            const dataMessage = buffer.subarray(1);
-            callback(dataMessage);
+            //const dataMessage = buffer.subarray(1);
+            callback(buffer);
         }
     }
-
-    sendMessage(data:Buffer[]) {
+    // Will have to be remade so that every 32 bits in buffer is made into it's own element for video
+    sendMessage(data:Buffer) {
         if (this.socket == null) return;
-        const bufferArray = new Uint8Array();
-        for (let i = 0; i<data.length; i++) {
-            bufferArray.set(data[i], i);
+        const bufferArray = new Uint32Array();
+        const dataID = data.readUInt8(0);
+
+        // Made to be used for video, if not video for now just send the raw un edited buffer to api
+        if (dataID == DataIdentifier.VIDEO) {
+            // For now, for every 8 bits separate into its own 32 bit element in array to be sent off
+            bufferArray.set(data.subarray(0,8), 0); // DataIdentifier getting it's own element index
+            console.log(dataID);
+            for (let i = 8; i<data.length; i = i + 8) {
+                bufferArray.set(data.subarray(i, (i+8)), i);
+            }
         }
+
         this.socket.send(bufferArray);
     }
 }

@@ -100,28 +100,21 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 		console.log("Accepting messages.");
 		mysession.AddClient(clientaddress);
 		clientsocket.send(1); // Placeholder "Accepted" code
-		clientsocket.send(2);
-		clientsocket.send(3);
-		clientsocket.send(4);
 
 		//Start recieving network messages
-		clientsocket.on("message", (data: Buffer[]) => {
-			// Create a Uint32Bit Array to told RGB Values
-			const buffer = new Uint32Array();
-			// Loop thru the Buffer[] recieved and every 4 indexes place into an Int32Bit and place that into our bufferArray32
-			for (let i = 0; i<data.length;) {
-				const array = new Uint8Array();
-				array.set(data[i], 0);
-				array.set(data[i+1], 1);
-				array.set(data[i+2], 2);
-				array.set(data[i+3], 3);
-				
-				const bufferIndex = Buffer.from(array, 1, 4).readInt32BE(0);
-				buffer[i] = bufferIndex;
-				i += 4;
+		clientsocket.on("message", (data: Uint32Array) => {
+			// Check to see if we got a string by checking the DataIdentifier tag (first byte)
+			console.log(data.at(0));
+			console.log("Recieved message")
+			
+
+			/* // Else, Create a Uint32Bit Array to told RGB Values
+			let buffer = new Uint32Array();
+			for (let i = 0; i<data.length; i = i+4) {
+				buffer.set([data[i], data[i+1], data[i+2], data[i+3]])
 			}
 			// Send off the buffer32Array
-			clientsocket.send(buffer);
+			clientsocket.send(buffer); */
 		})
 
 		clientsocket.on("close", () => {

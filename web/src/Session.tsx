@@ -1,4 +1,5 @@
 import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react'
+import { Buffer } from 'buffer';
 import './Session.css'
 import { useParams } from 'react-router-dom'
 import { useCookie } from './cookie';
@@ -111,12 +112,7 @@ function Session() {
         sessionSocket.createSocket(url);
         sessionSocket.onMessage(async (data:any) => {
         // If our data is a string for now just print on console
-        if (typeof data === "string") {
-            console.log(data);
-            setRecievedData(true);
-            return;
-        }
-        // Else our data must be rawdata for now just push to HostData array
+
         
         HostData.push(data);
         setRecievedData(true);
@@ -148,56 +144,57 @@ function Session() {
     const onKbdChange = async (Event: KeyboardEvent, EventType:string) => {
         if (sessionid == undefined || Connection == false) return;
 
-        let bufferArray:Buffer[] = [];
-        let buffer: Buffer | Buffer[] = [];
-        let dataType: Buffer;
+        // Plans for a standard Message Bitfield:
+        // 0               1-15
+        // DATAIDENTIFIED | ACTUAL DATA TO SEND
+        let messageBuffer:Buffer = Buffer.alloc(4);
+
 
         switch (EventType) {
             case 'KEYUP':
-                buffer = Buffer.alloc(1, Event.key);
-                dataType = Buffer.alloc(1, DataIdentifier.INKBDUP);
-                bufferArray = [dataType, buffer];
+                messageBuffer.writeInt8(DataIdentifier.INKBDUP);
+                messageBuffer.write(Event.key, 'ascii');
                 break;
             case 'KEYDWN':
-                buffer = Buffer.alloc(1, Event.key);
-                dataType = Buffer.alloc(1, DataIdentifier.INKBDDOWN);
-                bufferArray = [dataType, buffer];
+                messageBuffer.writeInt8(DataIdentifier.INKBDDOWN);
+                messageBuffer.write(Event.key, 'ascii');
                 break;
             default:
                 break;
         }
-        sessionSocket.sendMessage(bufferArray);
+        sessionSocket.sendMessage(messageBuffer);
     }
 
     // Attempt to grab input if window is focused, then send it off to the host/api server
     const onMseChange = async (Event: MouseEvent, EventType:string) => {
         if (sessionid == undefined || Connection == false) return;
 
-        let bufferArray:Buffer[] = [];
-        let buffer: Buffer | Buffer[] = [];
-        let dataType: Buffer;
+        // Plans for a standard Message Bitfield:
+        // 0               1-15
+        // DATAIDENTIFIED | ACTUAL DATA TO SEND
+        let messageBuffer:Buffer = Buffer.alloc(4);
 
         switch (EventType) {
             case 'INMSEUP':
-                dataType = Buffer.alloc(1, DataIdentifier.INMSEUP);
-                buffer = Buffer.alloc(1, Event.buttons);
-                bufferArray = [dataType, buffer];
+                messageBuffer.writeInt8(DataIdentifier.INMSEUP, 0);
+                messageBuffer.writeInt8(Event.button, 1);
+                console.log(messageBuffer);
                 break;
             case 'INMSEDOWN':
-                dataType = Buffer.alloc(1, DataIdentifier.INMSEDOWN);
-                buffer = Buffer.alloc(1, Event.buttons);
-                bufferArray = [dataType, buffer];
+                messageBuffer.writeInt8(DataIdentifier.INMSEDOWN, 0);
+                messageBuffer.writeInt8(Event.button, 1);
+                console.log(messageBuffer);
                 break;
             case 'INMSEMOVE':
-                dataType = Buffer.alloc(1, DataIdentifier.INMSEMOVE);
-                buffer[0] = Buffer.alloc(4, Event.screenX);
-                buffer[1] = Buffer.alloc(4, Event.screenY);
-                bufferArray = [dataType, buffer[0], buffer[1]];
+                messageBuffer.writeInt8(DataIdentifier.INMSEMOVE, 0);
+                messageBuffer.writeInt8(Event.movementX, 1);
+                messageBuffer.writeInt8(Event.movementY, 2);
+                console.log(messageBuffer);
                 break;
             default:
                 break;
         }
-        sessionSocket.sendMessage(bufferArray);
+        sessionSocket.sendMessage(messageBuffer);
     }
 
     // Where we'll start to load up video and any other important details when page is first loaded
@@ -215,7 +212,7 @@ function Session() {
             onKeyUp={e => onKbdChange(e, 'KEYUP')}
             onMouseDown={e => onMseChange(e, 'INMSEDWN')}
             onMouseUp={e => onMseChange(e, 'INMSEUP')}
-            onMouseMove={e => onMseChange(e, 'INMSEUP')}
+            onMouseMove={e => onMseChange(e, 'INMSEMOVE')}
             >
             {
                 error ? <p>{ErrorMsg}</p> :
