@@ -96,20 +96,11 @@ export class useSocket {
     }
     // Will have to be remade so that every 32 bits in buffer is made into it's own element for video
     sendMessage(data:Buffer) {
+        // First byte of data will ALWAYS be Data Identifier
         if (this.socket == null) return;
-        const bufferArray = new Uint32Array();
-        const dataID = data.readUInt8(0);
+        const bufferArray = new Uint32Array(data);
 
-        // Made to be used for video, if not video for now just send the raw un edited buffer to api
-        if (dataID == DataIdentifier.VIDEO) {
-            // For now, for every 8 bits separate into its own 32 bit element in array to be sent off
-            bufferArray.set(data.subarray(0,8), 0); // DataIdentifier getting it's own element index
-            console.log(dataID);
-            for (let i = 8; i<data.length; i = i + 8) {
-                bufferArray.set(data.subarray(i, (i+8)), i);
-            }
-        }
-
+        console.log(bufferArray);
         this.socket.send(bufferArray);
     }
 }

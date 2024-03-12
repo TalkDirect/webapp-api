@@ -101,10 +101,12 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 		mysession.AddClient(clientaddress);
 		clientsocket.send(1); // Placeholder "Accepted" code
 
-		//Start recieving network messages
+		// Start recieving network messages
+		// Currently does not work properly, guessing that we need to install "buffer" package to this install
 		clientsocket.on("message", (data: Uint32Array) => {
 			// Check to see if we got a string by checking the DataIdentifier tag (first byte)
-			console.log(data.at(0));
+			const dataID = data.at(0);
+			console.log(data);
 			console.log("Recieved message")
 			
 
