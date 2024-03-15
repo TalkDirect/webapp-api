@@ -117,6 +117,7 @@ function Session() {
         HostData.push(data);
         setRecievedData(true);
         });
+        setRecievedData(false);
     }
 
     // Attempt to grab the session media from the host/api
@@ -144,10 +145,11 @@ function Session() {
         if (sessionid == undefined || Connection == false) return;
 
         /* 
-        Plans for a standard String Message Bitfield
-        0               1-15             15-n
-        DATAID          | String Length  | String Content
+        // Plans for a standard Mouse Message Bitfield:
+        // 0-7               8-15            16-n<- Bit Position
+        // DATAID          | String Length | Content
         */
+       
         // Grab String from form
         const form  = Event.currentTarget.parentElement as HTMLFormElement;
         const formData = new FormData(form);
@@ -156,10 +158,10 @@ function Session() {
         const clientMessage = formJson['client-message'] as string;
 
         // Start to package together a buffer of bits to send off
-        let headerBuffer:Buffer = Buffer.alloc(4);
+        let headerBuffer:Buffer = Buffer.alloc(2);
 
-        headerBuffer.writeInt8(DataIdentifier.STRING, 0);
-        headerBuffer.writeUInt16BE(clientMessage.length, 1);
+        headerBuffer.writeUint8(DataIdentifier.STRING, 0);
+        headerBuffer.writeUint8(clientMessage.length, 1);
 
         const contentBuffer = Buffer.from(clientMessage, 'utf-8');
 
@@ -179,11 +181,11 @@ function Session() {
 
         switch (EventType) {
             case 'KEYUP':
-                headerBuffer.writeInt8(DataIdentifier.INKBDUP, 0);
+                headerBuffer.writeUint8(DataIdentifier.INKBDUP, 0);
                 messageBuffer.write(Event.key, 'utf-8');
                 break;
             case 'KEYDWN':
-                headerBuffer.writeInt8(DataIdentifier.INKBDDOWN, 0);
+                headerBuffer.writeUint8(DataIdentifier.INKBDDOWN, 0);
                 messageBuffer.write(Event.key, 'utf-8');
                 break;
             default:
@@ -205,15 +207,15 @@ function Session() {
 
         switch (EventType) {
             case 'INMSEUP':
-                headerBuffer.writeInt8(DataIdentifier.INMSEUP, 0);
-                messageBuffer.writeInt8(Event.button, 0);
+                headerBuffer.writeUint8(DataIdentifier.INMSEUP, 0);
+                messageBuffer.writeUint8(Event.button, 0);
                 break;
             case 'INMSEDOWN':
-                headerBuffer.writeInt8(DataIdentifier.INMSEDOWN, 0);
-                messageBuffer.writeInt8(Event.button, 0);
+                headerBuffer.writeUint8(DataIdentifier.INMSEDOWN, 0);
+                messageBuffer.writeUint8(Event.button, 0);
                 break;
             case 'INMSEMOVE':
-                headerBuffer.writeInt8(DataIdentifier.INMSEMOVE, 0);
+                headerBuffer.writeUint8(DataIdentifier.INMSEMOVE, 0);
                 messageBuffer.writeInt8(Event.movementX, 0);
                 messageBuffer.writeInt8(Event.movementY, 1);
                 break;
@@ -228,9 +230,6 @@ function Session() {
         FetchSessionState();
     },[])
 
-    let dataList = HostData.map(data =>
-        <li>{data}</li>)
-
     return (
     <>
         <div className='Capture-Div'
@@ -242,7 +241,9 @@ function Session() {
             >
             {
                 error ? <p>{ErrorMsg}</p> :
-                <ul>{dataList}</ul>
+                <ul>{
+                    HostData.map(data => <li>{data}</li>)
+                    }</ul>
             }
 
         </div>

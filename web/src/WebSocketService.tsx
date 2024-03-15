@@ -61,6 +61,7 @@ export class useSocket {
     createSocket(socketUrl:string) {
         if (this.socket !== null) return;
         this.socket = new WebSocket(socketUrl);
+        this.socket.binaryType = "arraybuffer";
     }
 
     closeSocket() {
@@ -80,11 +81,11 @@ export class useSocket {
         this.socket.onmessage = (Event) => {
             console.log('recievedmessage');
             // Retrieve the raw data & decode the data identifier
-            const buffer:Uint32Array = Event.data;
+            const buffer:Uint32Array = new Uint32Array(Event.data);
             const dataID = buffer[0];
             // We might need to decode this
             // Just set the callback to a string if identifier says string or error
-            if (dataID === DataIdentifier.STRING || dataID === DataIdentifier.ERROR) {
+            if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR) {
                 const stringMessage = new TextDecoder().decode(buffer.subarray(1));
                 callback(stringMessage);
                 return;
