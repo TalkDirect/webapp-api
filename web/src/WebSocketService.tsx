@@ -78,30 +78,37 @@ export class useSocket {
     // When clientsocket recieves a message preform this function
     onMessage(callback:any) {
         if (this.socket == null) return;
+
         this.socket.onmessage = (Event) => {
-            console.log('recievedmessage');
-            // Retrieve the raw data & decode the data identifier
-            const buffer:Uint32Array = new Uint32Array(Event.data);
-            const dataID = buffer[0];
-            // We might need to decode this
-            // Just set the callback to a string if identifier says string or error
-            if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR) {
-                const stringMessage = new TextDecoder().decode(buffer.subarray(1));
+            // Get the websocket's message and throw it into a 8bit array to be compared/used
+            console.log('Frontend Webapp Recieved Message');
+            const socketBuffer = new Uint8Array(Event.data);
+            const dataID = socketBuffer[0];
+
+            if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR || false) {
+                const stringMessage = new TextDecoder().decode(socketBuffer.subarray(2));
                 callback(stringMessage);
                 return;
             }
+            // If it's not a string, scale up the 8bit array to an 32bit array
+            const VideoBuffer:Uint32Array = new Uint32Array(socketBuffer);
             // Else set callback for now to be more rawdata and let it be handled on React page
-            //const dataMessage = buffer.subarray(1);
-            callback(buffer);
+            callback(VideoBuffer);    
         }
     }
-    // Will have to be remade so that every 32 bits in buffer is made into it's own element for video
     sendMessage(data:Buffer) {
         // First byte of data will ALWAYS be Data Identifier
         if (this.socket == null) return;
+        const DataID = data.at(0);
+
+        // If we're planning on sending over a string put it into a byte array; else throw it into a int array (32 bit array)
+        if (DataID == DataIdentifier.STRING || DataID == DataIdentifier.ERROR) {
+            this.socket.send(new Uint8Array(data));
+            console.log("Webapp Sending Message to API");
+            return;
+        }
         const bufferArray = new Uint32Array(data);
 
-        console.log(bufferArray);
         this.socket.send(bufferArray);
     }
 }

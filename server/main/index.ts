@@ -97,47 +97,25 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 	.then((mysession: Session) => {
 		// Begin accepting messages from client
 
-		console.log("Accepting messages.");
+		console.log("API Accepting messages.");
 		mysession.AddClient(clientaddress);
 
 		 // Placeholder "Accepted" code, need to get a buffer that's correctly formatted to be sent
-		let testBuffer = Buffer.alloc(2);
-		testBuffer.writeUint8(2,0);
-		testBuffer.writeUint8(49,1);
-		const testArrBuffer = new Uint32Array(testBuffer);
+		const testArrBuffer = new Uint8Array([0x02, 0x04, 0x74, 0x65, 0x73, 0x74])
 		clientsocket.send(testArrBuffer);
 
 		// Start recieving network messages
-		// Currently does not work properly, guessing that we need to install "buffer" package to this install
-		clientsocket.on("message", (data: Uint32Array) => {
-			// Check to see if we got a string by checking the DataIdentifier tag (first byte)
+		clientsocket.on("message", (data: Uint8Array | Uint32Array) => {
 			const dataID = data.at(0);
-			// Remember that INMSEMOVE's content should be read as a signed integer due to it having negative numbers (acceleration/velocity)			
-			if (dataID == 2) {
-				let formattedString = "";
-				// First Retrieve the string length bitfield number
-				const stringLength = data.at(1) as number;
 
-				// the loop doesn't work; I think I need to fix the append of new characters to the string
-				/*for (let i = 0; i<=stringLength; i++) {
-					formattedString+String.fromCharCode(data[2+i]);
-				}
-				console.log(formattedString);
-				*/
-				
+			// Remember that INMSEMOVE's content should be read as a signed integer due to it having negative numbers (acceleration/velocity)			
+			if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR) { // Turn if statement into to switch statement later			
 				// This also doesn't work properly, i need to come up with something better
-				console.log(data.subarray(2).toString());
+				const stringMessage = new TextDecoder().decode(data.subarray(2));
+				console.log(stringMessage);
 				clientsocket.send(data);
+				console.log("Backend API Recieved Message")
 			}
-			console.log("Recieved message")
-			
-			/* // Else, Create a Uint32Bit Array to told RGB Values
-			let buffer = new Uint32Array();
-			for (let i = 0; i<data.length; i = i+4) {
-				buffer.set([data[i], data[i+1], data[i+2], data[i+3]])
-			}
-			// Send off the buffer32Array
-			clientsocket.send(buffer); */
 		})
 
 		clientsocket.on("close", () => {

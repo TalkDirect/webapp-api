@@ -97,27 +97,15 @@ function Session() {
                 break;
         }
     }
-    // Helper Function
-    /*const HandleSocketData = async () => {
-        if (recievedData == false || Connection == false || hasFetchedSession == false) return;
-        setRecievedData(false);
-        do {
-            setProcessedData(processedData => [...processedData, HostData.pop()?.data]);
-        } while(!HostData.isEmpty)
-        console.log(processedData)
-    }*/
 
     function ActivateSessionSocket(url: string) {
         //Create and hook onMessage with simple print statement
         sessionSocket.createSocket(url);
         sessionSocket.onMessage(async (data:any) => {
         // If our data is a string for now just print on console
-
-        
         HostData.push(data);
         setRecievedData(true);
         });
-        setRecievedData(false);
     }
 
     // Attempt to grab the session media from the host/api
@@ -158,7 +146,7 @@ function Session() {
         const clientMessage = formJson['client-message'] as string;
 
         // Start to package together a buffer of bits to send off
-        let headerBuffer:Buffer = Buffer.alloc(2);
+        let headerBuffer:Buffer = Buffer.allocUnsafe(2);
 
         headerBuffer.writeUint8(DataIdentifier.STRING, 0);
         headerBuffer.writeUint8(clientMessage.length, 1);
@@ -175,7 +163,7 @@ function Session() {
         // Plans for a standard Mouse Message Bitfield:
         // 0-7               8-23  <- Bit Position
         // DATAID          | Content
-        let headerBuffer:Buffer = Buffer.alloc(1);
+        let headerBuffer:Buffer = Buffer.allocUnsafe(1);
         let messageBuffer:Buffer = Buffer.alloc(4);
 
 
@@ -202,7 +190,7 @@ function Session() {
         // Plans for a standard Mouse Message Bitfield:
         // 0-7               8-23  <- Bit Position
         // DATAID          | Content
-        let headerBuffer:Buffer = Buffer.alloc(1);
+        let headerBuffer:Buffer = Buffer.allocUnsafe(1);
         let messageBuffer:Buffer = Buffer.alloc(4);
 
         switch (EventType) {
@@ -242,7 +230,7 @@ function Session() {
             {
                 error ? <p>{ErrorMsg}</p> :
                 <ul>{
-                    HostData.map(data => <li>{data}</li>)
+                    HostData.map(data => <ul>{data}</ul>)
                     }</ul>
             }
 
@@ -251,7 +239,7 @@ function Session() {
         <p> Enter Your Message Here!</p>
           <form className='chat-form' id="chat-form">
             <label htmlFor="chat-form">Message:</label>
-            <input type='text' name='client-message' id='client-message'/><br/>
+            <input type='text' name='client-message' id='client-message'  maxLength={255} /><br/>
             <input type='button' className='submit-button' id='submit-button' value='Send' onClick={e => onStringSubmit(e)}/>
           </form>
       </div>
