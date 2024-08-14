@@ -50,6 +50,16 @@ function JoinSession(sessionid: string, ip: string): boolean {
 
 }
 
+function RemoveSession(sessionid: string): boolean {
+	var targetSession = RetrieveSession(sessionid);
+	if (targetSession !== undefined) {
+		targetSession.CloseSession()
+		allSessions.delete(sessionid);
+		return true; // Return if the session was closed successfully or not
+	}
+	return false;
+}
+
 //Attempt to retrieve session asyncronously with a set amount of retries.
 async function tryRetrieveSession(sessionid: string, maxRetries = 3, currentRetries = 0) : Promise<Session> {
 	
@@ -246,6 +256,34 @@ app.get("/api/find/:sessionid", (req: Request, res: Response) => {
 	return;
 
 });
+
+// Close a Session down and inturn that session's websocket connection. Can only be called by the first connected client's IP (App)
+app.get("/api/close/:sessionid"), (req: Request, res: Response) => {
+	if (req.params.sessionid !== undefined && req.ip !== undefined) {
+		
+		let sessionid: string = req.params.sessionid;
+		let ip: string = req.ip;
+
+ 		//attempt to join 
+		let session = RetrieveSession(sessionid);
+
+		if (session && ip == session.RetrieveLastClient()) {
+			RemoveSession(sessionid);
+			res.status(202).json(
+				{
+					status: "Successfully closing down session",
+					sessionid: req.params.sessionid,
+				}
+			);
+			return; //guard clause 
+		} 
+
+	}
+
+	res.status(400).send();
+	return;
+
+}
 
 //Begin the server
 app.listen(API_PORT, () => {

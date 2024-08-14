@@ -104,6 +104,7 @@ function Session() {
         sessionSocket.onMessage(async (data:any) => {
         // If our data is a string for now just print on console
         HostData.push(data);
+        console.log(data);
         setRecievedData(true);
         });
     }
