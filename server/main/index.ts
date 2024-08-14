@@ -138,7 +138,6 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 
 
 
-
 //HTML API ENDPOINT
 
 //Configure CORS headers for a single response
@@ -173,12 +172,14 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 					sessionid: req.params.sessionid, 
 				}
 			);
+			JoinSession(sessionid, ip);
 			return; //guard clause
 		}
 
 	}
 
 	res.status(400).send();
+	return;
 
 });
 
@@ -206,6 +207,7 @@ app.get("/api/join/:sessionid", (req: Request, res: Response) => {
 	}
 
 	res.status(400).send();
+	return;
 
 });
 
@@ -230,11 +232,18 @@ app.get("/api/find/:sessionid", (req: Request, res: Response) => {
 				}
 			);
 			return; //guard clause 
-		} 
+		} else {
+			res.status(404).json({
+				status: "Unsuccessfully attempted to retrieved session",
+				sessionid: req.params.sessionid,
+				socketinfo: WS_URL+sessionid,
+			});
+		}
 
 	}
 
 	res.status(400).send();
+	return;
 
 });
 
