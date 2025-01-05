@@ -104,15 +104,9 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 	}
 
 	tryRetrieveSession(sessionid) // Attempt to find a session
-	.then((mysession: Session) => {
-		// Begin accepting messages from client
-
+	.then((mysession: Session) => {// Begin accepting messages from client
 		console.log("API Accepting messages.");
 		mysession.AddClient(clientaddress);
-
-		 // Placeholder "Accepted" code, need to get a buffer that's correctly formatted to be sent
-		const testArrBuffer = new Uint8Array([0x02, 0x74, 0x65, 0x73, 0x74])
-		clientsocket.send(testArrBuffer);
 
 		// Start recieving network messages
 		clientsocket.on("message", (data: Uint8Array) => {

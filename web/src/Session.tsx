@@ -232,7 +232,7 @@ function Session() {
         <p> Enter Your Message Here!</p>
           <form className='chat-form' id="chat-form">
             <label htmlFor="chat-form">Message:</label>
-            <input type='text' name='client-message' id='client-message'  maxLength={255} /><br/>
+            <input type='text' name='client-message' id='client-message' /><br/>
             <input type='button' className='submit-button' id='submit-button' value='Send' onClick={e => onStringSubmit(e)}/>
           </form>
       </div>
