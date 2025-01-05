@@ -1,47 +1,3 @@
-/*
-
-FEEL FREE TO DELETE THIS IF UNNEEDED
-
-export const useSocket = () => {
-
-    const socket: WebSocket | null = null; //useRef<WebSocket | null>(null);
-    //const [Data, setData] = useState<any[]>([]);
-
-    function createSocket(socketUrl:string) {
-        if (socket !== null) return; //guard clause
-        socket = new WebSocket(socketUrl);
-    }
-
-    function closeSocket() {
-        if (socket == null) return; //guard clause
-        socket.close()
-    }
-
-    function onConnection() {
-        if (socket == null) return; //guard clause
-        socket.onopen = (Event) => {
-            console.log(Event.target);
-        }
-    }
-
-    function onMessage() {
-        if (socket == null) return; //guard clause
-        socket.onmessage = (Event) => {
-            setData(m => [...m, Event.data]);
-        }
-    }
-
-    
-    useEffect(() => {
-        onConnection();
-        onMessage();
-
-        return () => socket.close();
-    }, []);
-
-    return Data;
-}*/
-
 enum DataIdentifier {
 	VIDEO = 0,
 	AUDIO = 1,
@@ -87,7 +43,7 @@ export class useSocket {
 
             if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR) {
                 // Decode from 3rd byte onwards b/c first two bytes are headerbytes & just describe sent data
-                const stringMessage = new TextDecoder().decode(socketBuffer.subarray(2));
+                const stringMessage = new TextDecoder().decode(socketBuffer.subarray(1));
                 callback(stringMessage);
                 return;
             }

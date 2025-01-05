@@ -28,7 +28,7 @@ enum DataIdentifier {
 var isFetchingSession = false;
 var hasFetchedSession = false;
 var sessionSocket = new useSocket();
-const HostData:any[] = [];
+let HostData:any[] = [];
 
 
 //FetchSession functionality
@@ -98,17 +98,6 @@ function Session() {
         }
     }
 
-    function ActivateSessionSocket(url: string) {
-        //Create and hook onMessage with simple print statement
-        sessionSocket.createSocket(url);
-        sessionSocket.onMessage(async (data:any) => {
-        // If our data is a string for now just print on console
-        HostData.push(data);
-        console.log(data);
-        setRecievedData(true);
-        });
-    }
-
     // Attempt to grab the session media from the host/api
 
     const FetchSessionState = async () => {
@@ -127,7 +116,13 @@ function Session() {
         setHost(fsr.host);
         setClients(fsr.clients);
         setConnection(true);
-        ActivateSessionSocket(WebsocketUrl);
+        sessionSocket.createSocket(WebsocketUrl);
+    }
+
+    function onMessage() {
+        sessionSocket.onMessage(async (data:string) => {
+            HostData.push(data);
+        });
     }
 
     const onStringSubmit = async (Event:MouseEvent) => {
@@ -135,8 +130,8 @@ function Session() {
 
         /* 
         // Plans for a standard Mouse Message Bitfield:
-        // 0-7               8-15            16-n<- Bit Position
-        // DATAID          | String Length | Content
+        // 0-7         |      8-n
+        // DATAID      |   Content
         */
        
         // Grab String from form
@@ -147,10 +142,9 @@ function Session() {
         const clientMessage = formJson['client-message'] as string;
 
         // Start to package together a buffer of bits to send off
-        let headerBuffer:Buffer = Buffer.allocUnsafe(2);
+        let headerBuffer:Buffer = Buffer.allocUnsafe(1);
 
         headerBuffer.writeUint8(DataIdentifier.STRING, 0);
-        headerBuffer.writeUint8(clientMessage.length, 1);
 
         const contentBuffer = Buffer.from(clientMessage, 'utf-8');
 
@@ -162,7 +156,7 @@ function Session() {
         if (sessionid == undefined || Connection == false) return;
 
         // Plans for a standard Mouse Message Bitfield:
-        // 0-7               8-23  <- Bit Position
+        // 0-7               8-23
         // DATAID          | Content
         let headerBuffer:Buffer = Buffer.allocUnsafe(1);
         let messageBuffer:Buffer = Buffer.alloc(4);
@@ -189,8 +183,9 @@ function Session() {
 
 
         // Plans for a standard Mouse Message Bitfield:
-        // 0-7               8-23  <- Bit Position
+        // 0-7             | 8-23
         // DATAID          | Content
+
         let headerBuffer:Buffer = Buffer.allocUnsafe(1);
         let messageBuffer:Buffer = Buffer.alloc(4);
 
@@ -217,7 +212,7 @@ function Session() {
     // Where we'll start to load up video and any other important details when page is first loaded
     useEffect(() => {
         FetchSessionState();
-    },[])
+    })
 
     return (
     <>
@@ -229,10 +224,7 @@ function Session() {
             onMouseMove={e => onMseChange(e, 'INMSEMOVE')}
             >
             {
-                error ? <p>{ErrorMsg}</p> :
-                <ul>{
-                    HostData.map(data => <ul>{data}</ul>)
-                    }</ul>
+                error ? <p>{ErrorMsg}</p> : <p>{HostData}</p>
             }
 
         </div>

@@ -95,7 +95,7 @@ async function tryRetrieveSession(sessionid: string, maxRetries = 3, currentRetr
 // SESSION SOCKET 
 
 socket.on("connection", (clientsocket: WebSocket, req: Request) => {
-
+	//TODO: Need to make the whole websocket system to be more RFC compliant, right now it's not and I believe that's why I'm receiving errors
 	let sessionid: string = req.url.substring(1); // the URL of a connection is localhost:PORT/[sessionid]. this grabs the sessionid from the end of the URL
 
 	let clientaddress: string = "::1" //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
@@ -111,21 +111,26 @@ socket.on("connection", (clientsocket: WebSocket, req: Request) => {
 		mysession.AddClient(clientaddress);
 
 		 // Placeholder "Accepted" code, need to get a buffer that's correctly formatted to be sent
-		const testArrBuffer = new Uint8Array([0x02, 0x04, 0x74, 0x65, 0x73, 0x74])
+		const testArrBuffer = new Uint8Array([0x02, 0x74, 0x65, 0x73, 0x74])
 		clientsocket.send(testArrBuffer);
 
 		// Start recieving network messages
-		clientsocket.on("message", (data: Uint8Array | Uint32Array) => {
+		clientsocket.on("message", (data: Uint8Array) => {
 			const dataID = data.at(0);
 
 			// Remember that INMSEMOVE's content should be read as a signed integer due to it having negative numbers (acceleration/velocity)			
 			if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR) { // Turn if statement into to switch statement later			
 				// This also doesn't work properly, i need to come up with something better
-				const stringMessage = new TextDecoder().decode(data.subarray(2));
+				const stringMessage = new TextDecoder().decode(data.subarray(1));
 				console.log(stringMessage);
-				clientsocket.send(data);
-				console.log("Backend API Recieved Message")
 			}
+
+			// Send out data to the sockets that didn't come from the original socket
+			socket.clients.forEach(client => {
+				if (client != clientsocket) {
+					client.send(data);
+				}
+			});
 		})
 
 		clientsocket.on("close", () => {
