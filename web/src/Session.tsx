@@ -117,6 +117,7 @@ function Session() {
         setClients(fsr.clients);
         setConnection(true);
         sessionSocket.createSocket(WebsocketUrl);
+        onMessage();
     }
 
     function onMessage() {

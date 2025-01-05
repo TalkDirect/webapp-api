@@ -41,16 +41,16 @@ export class useSocket {
             const socketBuffer = new Uint8Array(Event.data);
             const dataID = socketBuffer[0];
 
-            if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR) {
-                // Decode from 3rd byte onwards b/c first two bytes are headerbytes & just describe sent data
-                const stringMessage = new TextDecoder().decode(socketBuffer.subarray(1));
-                callback(stringMessage);
-                return;
+            switch (dataID) {
+                case DataIdentifier.ERROR:    
+                case DataIdentifier.STRING:
+                    const stringMessage = new TextDecoder().decode(socketBuffer.subarray(1));
+                    console.log(stringMessage);
+                    callback(stringMessage);
+                    return;
+                default:
+                    break;
             }
-            // If it's not a string, scale up the 8bit array to an 32bit array
-            const VideoBuffer:Uint32Array = new Uint32Array(socketBuffer);
-            // Else set callback for now to be more rawdata and let it be handled on React page
-            callback(VideoBuffer);
         }
     }
     sendMessage(data:Buffer) {
