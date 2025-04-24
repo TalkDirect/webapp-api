@@ -41,7 +41,8 @@ function CreateNewSession(sessionid: string): Session {
 function JoinSession(sessionid: string, ip: string): boolean {
 
 	var desiredsession = RetrieveSession(sessionid); // Attempt to find session
-	if (desiredsession !== undefined) {
+	let clientAmount = RetrieveClients(sessionid);
+	if (desiredsession !== undefined && (clientAmount == 0 || clientAmount == 1)) {
 		desiredsession.AddClient(ip); // Add client if session exists
 		return true; // Return if the session was joined successfully or not
 	}
@@ -57,6 +58,14 @@ function RemoveSession(sessionid: string): boolean {
 		return true; // Return if the session was closed successfully or not
 	}
 	return false;
+}
+
+function RetrieveClients(sessionid: string): number {
+	let targetSession = RetrieveSession(sessionid);
+	if (targetSession !== undefined) {
+		return targetSession.RetrieveClientListLength();
+	}
+	return -1;
 }
 
 //Attempt to retrieve session asyncronously with a set amount of retries.

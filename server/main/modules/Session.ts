@@ -54,4 +54,8 @@ export class Session {
 		return this.clients[this.clients.length-1].address;
 	}
 
+	RetrieveClientListLength() {
+		return this.clients.length;
+	}
+
 }

@@ -25,8 +25,20 @@ enum DataIdentifier {
 var isFetchingSession = false;
 var hasFetchedSession = false;
 var sessionSocket = new useSocket();
-let HostData:any[] = [];
+let ChatboxBuffer:any[] = [];
 
+// Chatbox Functionality
+function PushChatBuffer(message:string) {
+    if (ChatboxBuffer.length < 10) {
+        ChatboxBuffer.push(message);
+        return;
+    }
+    // If not < 10 start to pop messages from the list until we reach the end of list (index 9), then add in message
+    for (let i = 0; i < ChatboxBuffer.length-1; i++) {
+        ChatboxBuffer[i] = ChatboxBuffer[i+1];
+    }
+    ChatboxBuffer[9] = message;
+}
 
 //FetchSession functionality
 async function FetchSession(sessionid: string): Promise<FetchSessionResponse> {
@@ -119,7 +131,7 @@ function Session() {
 
     function onMessage() {
         sessionSocket.onMessage(async (data:string) => {
-            HostData.push(data);
+            PushChatBuffer(data);
         });
     }
 
@@ -175,7 +187,6 @@ function Session() {
         sessionSocket.sendMessage(Buffer.concat([headerBuffer, messageBuffer]));
     }
 
-    // Where we'll start to load up video and any other important details when page is first loaded
     useEffect(() => {
         FetchSessionState();
     })
@@ -186,8 +197,9 @@ function Session() {
             onKeyDown={e => onKbdChange(e, 'KEYDWN')}
             onKeyUp={e => onKbdChange(e, 'KEYUP')}
             >
+            {/*Need to add in a chatbox compoment here */}
             {
-                error ? <p>{ErrorMsg}</p> : <p>{HostData}</p>
+                error ? <p>{ErrorMsg}</p> : <p>{ChatboxBuffer}</p>
             }
 
         </div>

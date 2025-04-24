@@ -3,11 +3,8 @@ enum DataIdentifier {
 	AUDIO = 1,
 	STRING = 2,
 	ERROR = 3,
-    INMSEUP = 4,
-    INMSEDOWN = 5,
-    INMSEMOVE = 6,
-    INKBDUP = 7,
-    INKBDDOWN = 8,
+    INKBDUP = 4,
+    INKBDDOWN = 5,
 };
 
 export class useSocket {
