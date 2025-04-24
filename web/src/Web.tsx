@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
-import playDirectLogo from '/svg icon.svg'
+import talkDirectLogo from '/svg icon.svg'
 import './Web.css'
 
 function Web() {
@@ -10,7 +10,7 @@ function Web() {
     <>
       <div>
         <a href="https://vitejs.dev" target="_blank">
-          <img src={playDirectLogo} className="logo" alt="Vite logo" />
+          <img src={talkDirectLogo} className="logo" alt="Vite logo" />
         </a>
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />

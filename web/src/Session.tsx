@@ -18,11 +18,8 @@ enum DataIdentifier {
 	AUDIO = 1,
 	STRING = 2,
 	ERROR = 3,
-    INMSEUP = 4,
-    INMSEDOWN = 5,
-    INMSEMOVE = 6,
-    INKBDUP = 7,
-    INKBDDOWN = 8,
+    INKBDUP = 4,
+    INKBDDOWN = 5,
 };
 
 var isFetchingSession = false;
@@ -178,38 +175,6 @@ function Session() {
         sessionSocket.sendMessage(Buffer.concat([headerBuffer, messageBuffer]));
     }
 
-    // Attempt to grab input if window is focused, then send it off to the host/api server
-    const onMseChange = async (Event: MouseEvent, EventType:string) => {
-        if (sessionid == undefined || Connection == false) return;
-
-
-        // Plans for a standard Mouse Message Bitfield:
-        // 0-7             | 8-23
-        // DATAID          | Content
-
-        let headerBuffer:Buffer = Buffer.allocUnsafe(1);
-        let messageBuffer:Buffer = Buffer.alloc(4);
-
-        switch (EventType) {
-            case 'INMSEUP':
-                headerBuffer.writeUint8(DataIdentifier.INMSEUP, 0);
-                messageBuffer.writeUint8(Event.button, 0);
-                break;
-            case 'INMSEDOWN':
-                headerBuffer.writeUint8(DataIdentifier.INMSEDOWN, 0);
-                messageBuffer.writeUint8(Event.button, 0);
-                break;
-            case 'INMSEMOVE':
-                headerBuffer.writeUint8(DataIdentifier.INMSEMOVE, 0);
-                messageBuffer.writeInt8(Event.movementX, 0);
-                messageBuffer.writeInt8(Event.movementY, 1);
-                break;
-            default:
-                break;
-        }
-        sessionSocket.sendMessage(Buffer.concat([headerBuffer, messageBuffer]));
-    }
-
     // Where we'll start to load up video and any other important details when page is first loaded
     useEffect(() => {
         FetchSessionState();
@@ -220,9 +185,6 @@ function Session() {
         <div className='Capture-Div'
             onKeyDown={e => onKbdChange(e, 'KEYDWN')}
             onKeyUp={e => onKbdChange(e, 'KEYUP')}
-            onMouseDown={e => onMseChange(e, 'INMSEDWN')}
-            onMouseUp={e => onMseChange(e, 'INMSEUP')}
-            onMouseMove={e => onMseChange(e, 'INMSEMOVE')}
             >
             {
                 error ? <p>{ErrorMsg}</p> : <p>{HostData}</p>

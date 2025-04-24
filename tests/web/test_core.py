@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 
 '''
     Purpose:
-        A Quick and Easy unit Test designed to test the core funtionality of code in PlayDirect's main features.
+        A Quick and Easy unit Test designed to test the core funtionality of code in TalkDirect's main features.
 
     Actions Preformed:
         - Attempts to sign into an always active "dummy" session <- SHOULD PASS
@@ -35,7 +35,7 @@ class TestCoreFunctions(unittest.TestCase):
         tester.get("http://localhost:5173")
 
         # Ensuring that we properly set up our tester and it safely navigated to site
-        assert "PlayDirect" in tester.title
+        assert "TalkDirect" in tester.title
 
         # Ensure that our logo loaded
         playdir_logo = tester.find_element(By.ID, value="logo")

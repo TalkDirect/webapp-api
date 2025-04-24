@@ -17,8 +17,7 @@ enum DataIdentifier {
 	AUDIO = 1,
 	STRING = 2,
 	ERROR = 3,
-	INMSE = 4,
-	INKBD = 5,
+	INKBD = 4,
 };
 
 

@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import './Page.css'
-import playDirectLogo from '/svg icon.svg'
+import talkDirectLogo from '/svg icon.svg'
 import { useNavigate } from 'react-router-dom';
 import { useCookie } from './cookie';
 
@@ -70,11 +70,11 @@ function Page() {
   return (
     <>
       <div>
-          <a href="https://github.com/Chieffz/PlayDirect" target="_blank">
-              <img src={playDirectLogo} className="logo" id="logo" alt="PlayerDirect logo" />
+          <a href="https://github.com/TalkDirect" target="_blank">
+              <img src={talkDirectLogo} className="logo" id="logo" alt="PlayerDirect logo" />
           </a>
       </div>
-      <h1> PlayDirect</h1>
+      <h1> TalkDirect </h1>
       <div className='session-card'>
         <p> Enter your Session ID Here!</p>
           <form className='session-card-form' id="session-form" method='GET' onSubmit={HandleSubmit}>
