@@ -1,5 +1,7 @@
 import { FormEvent, KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react'
 import { Buffer } from 'buffer';
+import Chat from './Chat.tsx'
+import './Chat.css'
 import './Session.css'
 import { useParams } from 'react-router-dom'
 import { useCookie } from './cookie';
@@ -11,6 +13,12 @@ interface FetchSessionResponse {
     host: string | undefined;
     clients: Array<any> | undefined;
     errorCode: string | undefined;
+}
+
+interface Message {
+    id: string,
+    message: string,
+    time: number
 }
 
 enum DataIdentifier {
@@ -25,20 +33,7 @@ enum DataIdentifier {
 var isFetchingSession = false;
 var hasFetchedSession = false;
 var sessionSocket = new useSocket();
-let ChatboxBuffer:any[] = [];
-
-// Chatbox Functionality
-function PushChatBuffer(message:string) {
-    if (ChatboxBuffer.length < 10) {
-        ChatboxBuffer.push(message);
-        return;
-    }
-    // If not < 10 start to pop messages from the list until we reach the end of list (index 9), then add in message
-    for (let i = 0; i < ChatboxBuffer.length-1; i++) {
-        ChatboxBuffer[i] = ChatboxBuffer[i+1];
-    }
-    ChatboxBuffer[9] = message;
-}
+let messageBuffer = [];
 
 //FetchSession functionality
 async function FetchSession(sessionid: string): Promise<FetchSessionResponse> {
@@ -89,6 +84,8 @@ function Session() {
     // Used to display the error message
     const [ErrorMsg, setErrorMsg] = useState<string>();
 
+    const [messageBuffer, setmessageBuffer] = useState<Message[]>([]);
+
     // Handle Errors
     async function HandleError(errorType: string) {
         seterror(true);
@@ -105,6 +102,17 @@ function Session() {
                 setErrorMsg("Default unaccounted Error, please notify owners.");
                 break;
         }
+    }
+
+    // Chatbox Functionality
+    function PushChatBuffer(message:string) {
+        const msg: Message = {
+            id: crypto.randomUUID(),
+            message: message,
+            time: 1000
+        }
+        messageBuffer.push(msg);
+        setmessageBuffer(prev => [...prev, msg]);;
     }
 
     // Attempt to grab the session media from the host/api
@@ -126,6 +134,7 @@ function Session() {
         setClients(fsr.clients);
         setConnection(true);
         sessionSocket.createSocket(WebsocketUrl);
+        console.log("made socket")
         onMessage();
     }
 
@@ -133,6 +142,7 @@ function Session() {
         sessionSocket.onMessage(async (data:string) => {
             PushChatBuffer(data);
         });
+        console.log("got message")
     }
 
     const onStringSubmit = async (Event:MouseEvent) => {
@@ -151,6 +161,9 @@ function Session() {
         const formJson = Object.fromEntries(formData.entries());
         const clientMessage = formJson['client-message'] as string;
 
+        // First add this message as a new chat
+        PushChatBuffer(clientMessage);
+
         // Start to package together a buffer of bits to send off
         let headerBuffer:Buffer = Buffer.allocUnsafe(1);
 
@@ -161,56 +174,34 @@ function Session() {
         sessionSocket.sendMessage(Buffer.concat([headerBuffer, contentBuffer]));
     }
 
-    // Attempt to grab input if window is focused, then send it off to the host/api server
-    const onKbdChange = async (Event: KeyboardEvent, EventType:string) => {
-        if (sessionid == undefined || Connection == false) return;
-
-        // Plans for a standard Mouse Message Bitfield:
-        // 0-7               8-23
-        // DATAID          | Content
-        let headerBuffer:Buffer = Buffer.allocUnsafe(1);
-        let messageBuffer:Buffer = Buffer.alloc(4);
-
-
-        switch (EventType) {
-            case 'KEYUP':
-                headerBuffer.writeUint8(DataIdentifier.INKBDUP, 0);
-                messageBuffer.write(Event.key, 'utf-8');
-                break;
-            case 'KEYDWN':
-                headerBuffer.writeUint8(DataIdentifier.INKBDDOWN, 0);
-                messageBuffer.write(Event.key, 'utf-8');
-                break;
-            default:
-                break;
-        }
-        sessionSocket.sendMessage(Buffer.concat([headerBuffer, messageBuffer]));
-    }
-
     useEffect(() => {
         FetchSessionState();
     })
 
     return (
     <>
-        <div className='Capture-Div'
-            onKeyDown={e => onKbdChange(e, 'KEYDWN')}
-            onKeyUp={e => onKbdChange(e, 'KEYUP')}
-            >
-            {/*Need to add in a chatbox compoment here */}
-            {
-                error ? <p>{ErrorMsg}</p> : <p>{ChatboxBuffer}</p>
-            }
-
-        </div>
         <div className='chat-box'>
-        <p> Enter Your Message Here!</p>
-          <form className='chat-form' id="chat-form">
-            <label htmlFor="chat-form">Message:</label>
-            <input type='text' name='client-message' id='client-message' /><br/>
-            <input type='button' className='submit-button' id='submit-button' value='Send' onClick={e => onStringSubmit(e)}/>
-          </form>
-      </div>
+            <p> Chatroom</p>
+            <div className="chat-container">
+                {
+                    messageBuffer.map((msg, index) => {
+                        return (
+                            <Chat
+                            key={index}
+                            id={msg.id}
+                            message={msg.message}
+                            time={1000}
+                            />
+                        )
+                    })
+                }
+            </div>
+            <form className='chat-form' id="chat-form">
+                <label htmlFor="chat-form">Message:</label>
+                <input type='text' name='client-message' id='client-message' /><br/>
+                <input type='button' className='submit-button' id='submit-button' value='Send' onClick={e => onStringSubmit(e)}/>
+            </form>
+    </div>
     </>
     )
 }

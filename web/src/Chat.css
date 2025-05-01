@@ -1,0 +1,18 @@
+.Message-Box {
+    border: 2px solid #1d1d1d;
+    background-color: #1a1a1a;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+  }
+
+.Message-Content {
+    font-size: 1em;
+    font-family: inherit;
+    text-align: left;
+}
+
+.Message-Time {
+    float: right;
+    color: #aaa;
+  }

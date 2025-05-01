@@ -42,7 +42,7 @@ function JoinSession(sessionid: string, ip: string): boolean {
 
 	var desiredsession = RetrieveSession(sessionid); // Attempt to find session
 	let clientAmount = RetrieveClients(sessionid);
-	if (desiredsession !== undefined && (clientAmount == 0 || clientAmount == 1)) {
+	if (desiredsession !== undefined) {
 		desiredsession.AddClient(ip); // Add client if session exists
 		return true; // Return if the session was joined successfully or not
 	}
