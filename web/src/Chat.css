@@ -13,6 +13,6 @@
 }
 
 .Message-Time {
-    float: right;
+    text-align: right;
     color: #aaa;
   }
