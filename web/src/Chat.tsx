@@ -3,7 +3,7 @@ import './Chat.css'
 interface Message {
     id: string,
     message: string,
-    time: number
+    time: string
 }
 
 const Chat : React.FC<Message> = ({id, message, time}) => {
