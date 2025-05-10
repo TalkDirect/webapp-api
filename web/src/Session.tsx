@@ -18,7 +18,7 @@ interface FetchSessionResponse {
 interface Message {
     id: string,
     message: string,
-    time: number
+    time: string
 }
 
 enum DataIdentifier {
@@ -26,15 +26,11 @@ enum DataIdentifier {
 	AUDIO = 1,
 	STRING = 2,
 	ERROR = 3,
-    INKBDUP = 4,
-    INKBDDOWN = 5,
 };
 
 var isFetchingSession = false;
 var hasFetchedSession = false;
 var sessionSocket = new useSocket();
-let messageBuffer = [];
-
 //FetchSession functionality
 async function FetchSession(sessionid: string): Promise<FetchSessionResponse> {
 
@@ -109,7 +105,7 @@ function Session() {
         const msg: Message = {
             id: crypto.randomUUID(),
             message: message,
-            time: 1000
+            time: new Date().toLocaleString()
         }
         messageBuffer.push(msg);
         setmessageBuffer(prev => [...prev, msg]);;
@@ -134,7 +130,6 @@ function Session() {
         setClients(fsr.clients);
         setConnection(true);
         sessionSocket.createSocket(WebsocketUrl);
-        console.log("made socket")
         onMessage();
     }
 
@@ -142,7 +137,6 @@ function Session() {
         sessionSocket.onMessage(async (data:string) => {
             PushChatBuffer(data);
         });
-        console.log("got message")
     }
 
     const onStringSubmit = async (Event:MouseEvent) => {
@@ -190,7 +184,7 @@ function Session() {
                             key={index}
                             id={msg.id}
                             message={msg.message}
-                            time={1000}
+                            time={msg.time}
                             />
                         )
                     })

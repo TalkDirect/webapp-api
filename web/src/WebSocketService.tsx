@@ -42,7 +42,6 @@ export class useSocket {
                 case DataIdentifier.ERROR:    
                 case DataIdentifier.STRING:
                     const stringMessage = new TextDecoder().decode(socketBuffer.subarray(1));
-                    console.log(stringMessage);
                     callback(stringMessage);
                     return;
                 default:
