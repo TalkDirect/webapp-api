@@ -4,8 +4,8 @@ import { Session } from "./modules/Session"
 
 const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
-const API_PORT = 9999
-const SOCKET_PORT = 9998
+const API_PORT = 10000
+const SOCKET_PORT = 10000
 const WS_URL = `ws://talkdirect-api.onrender.com:${SOCKET_PORT}/`
 
 const app: Express = express();
