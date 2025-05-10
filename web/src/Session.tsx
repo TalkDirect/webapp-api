@@ -36,7 +36,7 @@ async function FetchSession(sessionid: string): Promise<FetchSessionResponse> {
 
     try {
         // Attempt to register the current user as a client on the session
-        const response = await fetch(`https://talkdirect-api.onrender.com:9999/api/join/${sessionid}`, {
+        const response = await fetch(`http://localhost:9999/api/join/${sessionid}`, {
             method: 'GET',
         });
 

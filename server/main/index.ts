@@ -6,7 +6,7 @@ const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
 const API_PORT = 9999
 const SOCKET_PORT = 9998
-const WS_URL = `ws://talkdirect-api.onrender:${SOCKET_PORT}/`
+const WS_URL = `ws://localhost:${SOCKET_PORT}/`
 
 const app: Express = express();
 var allSessions = new Map<string, Session>();
