@@ -46,7 +46,7 @@ function Page() {
 
       // Send a GET Request to attempt to see if a valid session exists with that ID, if not throw an error
       const sessionAttempt = formJson['sessionid'] as string;
-      const response:Response = await fetch(`https://talkdirect-api.onrender.com/api/find/${sessionAttempt}`, {
+      const response:Response = await fetch(`https://localhost:9999/api/find/${sessionAttempt}`, {
           method: 'GET',
       });
 
