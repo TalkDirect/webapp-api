@@ -1,12 +1,11 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import websocket, { WebSocket, WebSocketServer, RawData } from "ws";
-import http from "http";
+import http, { IncomingMessage } from "http";
 import { Session } from "./modules/Session";
 
 const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
 const API_PORT = process.env.PORT || 10000
-const SOCKET_PORT = parseInt(process.env.PORT || '10000', 10);
 const WS_URL = `wss://talkdirect-api.onrender.com/`
 
 const app: Express = express();
@@ -104,10 +103,14 @@ async function tryRetrieveSession(sessionid: string, maxRetries = 3, currentRetr
 
 // SESSION SOCKET 
 
-socket.on("connection", (clientsocket: WebSocket, req: Request) => {
+socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 	//TODO: Need to make the whole websocket system to be more RFC compliant, right now it's not and I believe that's why I'm receiving errors
-	let sessionid: string = req.url.substring(1); // the URL of a connection is localhost:PORT/[sessionid]. this grabs the sessionid from the end of the URL
-
+	let url = req.url;
+	if (!url) {
+		console.log("Request on Websocket server does NOT have a URL attached");
+		return;
+	}
+	let sessionid = url?.substring(1);
 	let clientaddress: string = "::1" //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
 	if (req.socket.remoteAddress !== undefined) {
 		clientaddress = req.socket.remoteAddress;
@@ -295,6 +298,6 @@ app.get("/api/close/:sessionid"), (req: Request, res: Response) => {
 }
 
 //Begin the server
-app.listen(API_PORT, () => {
+server.listen(API_PORT, () => {
 	console.log("server started");
 });
