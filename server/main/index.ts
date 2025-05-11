@@ -6,7 +6,7 @@ import { Session } from "./modules/Session";
 const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
 const API_PORT = process.env.PORT || 10000
-const WS_URL = `wss://talkdirect-api.onrender.com/`
+const WS_URL = `ws://talkdirect-api.onrender.com/`
 
 const app: Express = express();
 const server = http.createServer(app);
