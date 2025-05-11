@@ -1,16 +1,18 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import websocket, { WebSocket, WebSocketServer, RawData } from "ws";
-import { Session } from "./modules/Session"
+import http from "http";
+import { Session } from "./modules/Session";
 
 const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
 const API_PORT = process.env.PORT || 10000
-const SOCKET_PORT = parseInt(process.env.PORT || '9998', 10);
-const WS_URL = `wss://talkdirect-api.onrender.com:${SOCKET_PORT}/`
+const SOCKET_PORT = parseInt(process.env.PORT || '10000', 10);
+const WS_URL = `wss://talkdirect-api.onrender.com/`
 
 const app: Express = express();
-var allSessions = new Map<string, Session>();
-var socket = new WebSocketServer({ port: SOCKET_PORT });
+const server = http.createServer(app);
+const allSessions = new Map<string, Session>();
+const socket = new WebSocketServer({ server });
 
 enum DataIdentifier {
 	VIDEO = 0,
