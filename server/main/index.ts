@@ -4,9 +4,9 @@ import { Session } from "./modules/Session"
 
 const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
-const API_PORT = process.env.PORT || 9999
+const API_PORT = process.env.PORT || 10000
 const SOCKET_PORT = parseInt(process.env.SOCKET_PORT || '9998', 10);
-const WS_URL = `ws://talkdirect-api.onrender.com:${SOCKET_PORT}/`
+const WS_URL = `wss://talkdirect-api.onrender.com:${SOCKET_PORT}/`
 
 const app: Express = express();
 var allSessions = new Map<string, Session>();
