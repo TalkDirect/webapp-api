@@ -111,15 +111,15 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 		return;
 	}
 	let sessionid = url?.substring(1);
-	let clientaddress: string = "::1" //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
-	if (req.socket.remoteAddress !== undefined) {
-		clientaddress = req.socket.remoteAddress;
+	let numClients = socket.clients.size;
+	let clientaddress: string = "::" + numClients; //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
+	if (clientsocket.url !== undefined) {
+		clientaddress = clientsocket.url;
 	}
 
 	tryRetrieveSession(sessionid) // Attempt to find a session
 	.then((mysession: Session) => {// Begin accepting messages from client
 		console.log("API Accepting messages.");
-		mysession.AddClient(clientaddress);
 
 		// Start recieving network messages
 		clientsocket.on("message", (data: Uint8Array) => {
