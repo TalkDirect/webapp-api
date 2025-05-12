@@ -1,6 +1,6 @@
 # ready-start
 Custom Remote Player
-
+Built and Deployed Web App is available [here](https://talkdirect-webapp.onrender.com), requires the building and running of the accompanying desktop app inorder to host sessions for the web app to join to.
 
 # Compiling & Running Backend API
 
