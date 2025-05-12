@@ -39,12 +39,12 @@ function CreateNewSession(sessionid: string): Session {
 }
 
 //Attempt to add client IP to a session
-function JoinSession(sessionid: string, ip: string): boolean {
+function JoinSession(sessionid: string, user: string): boolean {
 
 	var desiredsession = RetrieveSession(sessionid); // Attempt to find session
 	let clientAmount = RetrieveClients(sessionid);
 	if (desiredsession !== undefined) {
-		desiredsession.AddClient(ip); // Add client if session exists
+		desiredsession.AddClient(user); // Add client if session exists
 		return true; // Return if the session was joined successfully or not
 	}
 	return false;
@@ -210,10 +210,13 @@ app.get("/api/join/:sessionid", (req: Request, res: Response) => {
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 		
 		let sessionid: string = req.params.sessionid;
-		let ip: string = req.ip;
+		let clientaddress: string = req.ip;
+		if (req.headers["user-agent"] != undefined) {
+			clientaddress = req.headers["user-agent"];
+		}
 
  		//attempt to join 
-		let success = JoinSession(sessionid, ip);
+		let success = JoinSession(sessionid, clientaddress);
 
 		if (success) {
 			res.status(202).json(
