@@ -1,4 +1,4 @@
-import { FormEvent, KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react'
+import { MouseEvent, useEffect, useState } from 'react'
 import { Buffer } from 'buffer';
 import Chat from './Chat.tsx'
 import './Chat.css'
@@ -60,25 +60,22 @@ function Session() {
     const {sessionid} = useParams();
 
     // Determine whether or not the current User is the Host, if Host do not play video, instead display an error where video would be
-    const [Host, setHost] = useState<string>();
+    const [, setHost] = useState<string>();
 
     // Grab all the current clients connected to the host
-    const [Clients, setClients] = useState<any[]>();
+    const [, setClients] = useState<any[]>();
 
     // Grab the websocket url from cookies
-    const [WebsocketUrl, setWebsocketUrl] = useCookie('Websocket-url', '');
+    const [WebsocketUrl,] = useCookie('Websocket-url', '');
 
     // Signifies a Valid Websocket Connection
     const [Connection, setConnection] = useState<boolean>(false);
 
-    // Signifies that data has been sent
-    const [recievedData, setRecievedData] = useState<boolean>(false);
-
     // Used to exclaim an error has occured
-    const [error, seterror] = useState(false);
+    const [, seterror] = useState(false);
 
     // Used to display the error message
-    const [ErrorMsg, setErrorMsg] = useState<string>();
+    const [, setErrorMsg] = useState<string>();
 
     const [messageBuffer, setmessageBuffer] = useState<Message[]>([]);
 

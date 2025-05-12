@@ -7,7 +7,7 @@ import { useCookie } from './cookie';
 function Page() {
 
   // The state that'll be saved to cookies
-  const [WebsocketUrl, setWebsocketUrl] = useCookie('Websocket-url', '');
+  const [, setWebsocketUrl] = useCookie('Websocket-url', '');
 
   // Boolean to Check if button is pressed or not for joining session
   const [error, seterror] = useState(false);
