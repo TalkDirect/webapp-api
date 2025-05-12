@@ -70,7 +70,8 @@ function Page() {
   return (
     <>
       <div>
-          <a href="https://github.com/TalkDirect" target="_blank">
+          <p>Visit here to install the desktop app to start a connection!</p>
+          <a href="https://github.com/TalkDirect/app" target="_blank">
               <img src={talkDirectLogo} className="logo" id="logo" alt="PlayerDirect logo" />
           </a>
       </div>
