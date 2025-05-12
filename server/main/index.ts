@@ -180,7 +180,10 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 
 		let sessionid: string = req.params.sessionid;
-		let ip: string = req.ip;
+		let clientaddress: string = req.ip;
+		if (req.headers["user-agent"] != undefined) {
+			clientaddress = req.headers["user-agent"];
+		}
 
 		//create new session
 		let newsession = CreateNewSession(sessionid);
@@ -193,7 +196,7 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 					sessionid: req.params.sessionid, 
 				}
 			);
-			JoinSession(sessionid, ip);
+			JoinSession(sessionid, clientaddress);
 			return; //guard clause
 		}
 
