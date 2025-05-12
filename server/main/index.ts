@@ -112,10 +112,7 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 	}
 	let sessionid = url?.substring(1);
 	let numClients = socket.clients.size;
-	let clientaddress: string = "::" + numClients; //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
-	if (clientsocket.url !== undefined) {
-		clientaddress = clientsocket.url;
-	}
+	let clientaddress: string = clientsocket.url; //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
 
 	tryRetrieveSession(sessionid) // Attempt to find a session
 	.then((mysession: Session) => {// Begin accepting messages from client
