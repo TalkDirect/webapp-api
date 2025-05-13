@@ -12,6 +12,7 @@ tests/pyvenv.cfg
 # production
 web/build
 server/main/build
+web/dist
 
 # sublime text related environment settings
 *.sublime-project

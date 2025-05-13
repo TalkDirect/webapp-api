@@ -7,7 +7,7 @@ import { useCookie } from './cookie';
 function Page() {
 
   // The state that'll be saved to cookies
-  const [WebsocketUrl, setWebsocketUrl] = useCookie('Websocket-url', '');
+  const [, setWebsocketUrl] = useCookie('Websocket-url', '');
 
   // Boolean to Check if button is pressed or not for joining session
   const [error, seterror] = useState(false);
@@ -70,7 +70,8 @@ function Page() {
   return (
     <>
       <div>
-          <a href="https://github.com/TalkDirect" target="_blank">
+          <p>Visit here to install the desktop app to start a connection!</p>
+          <a href="https://github.com/TalkDirect/app" target="_blank">
               <img src={talkDirectLogo} className="logo" id="logo" alt="PlayerDirect logo" />
           </a>
       </div>

@@ -1,16 +1,17 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import websocket, { WebSocket, WebSocketServer, RawData } from "ws";
-import { Session } from "./modules/Session"
+import http, { IncomingMessage } from "http";
+import { Session } from "./modules/Session";
 
 const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
-const API_PORT = process.env.PORT || 9999
-const SOCKET_PORT = parseInt(process.env.SOCKET_PORT || '9998', 10);
-const WS_URL = `ws://talkdirect-api.onrender.com:${SOCKET_PORT}/`
+const API_PORT = process.env.PORT || 10000
+const WS_URL = `wss://talkdirect-api.onrender.com/`
 
 const app: Express = express();
-var allSessions = new Map<string, Session>();
-var socket = new WebSocketServer({ port: SOCKET_PORT });
+const server = http.createServer(app);
+const allSessions = new Map<string, Session>();
+const socket = new WebSocketServer({ server });
 
 enum DataIdentifier {
 	VIDEO = 0,
@@ -38,12 +39,12 @@ function CreateNewSession(sessionid: string): Session {
 }
 
 //Attempt to add client IP to a session
-function JoinSession(sessionid: string, ip: string): boolean {
+function JoinSession(sessionid: string, user: string): boolean {
 
 	var desiredsession = RetrieveSession(sessionid); // Attempt to find session
 	let clientAmount = RetrieveClients(sessionid);
 	if (desiredsession !== undefined) {
-		desiredsession.AddClient(ip); // Add client if session exists
+		desiredsession.AddClient(user); // Add client if session exists
 		return true; // Return if the session was joined successfully or not
 	}
 	return false;
@@ -102,19 +103,22 @@ async function tryRetrieveSession(sessionid: string, maxRetries = 3, currentRetr
 
 // SESSION SOCKET 
 
-socket.on("connection", (clientsocket: WebSocket, req: Request) => {
+socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 	//TODO: Need to make the whole websocket system to be more RFC compliant, right now it's not and I believe that's why I'm receiving errors
-	let sessionid: string = req.url.substring(1); // the URL of a connection is localhost:PORT/[sessionid]. this grabs the sessionid from the end of the URL
-
-	let clientaddress: string = "::1" //default to localhost if address is undefined. this should be changed to terminate the socket in the future.
-	if (req.socket.remoteAddress !== undefined) {
-		clientaddress = req.socket.remoteAddress;
+	let url = req.url;
+	if (!url) {
+		console.log("Request on Websocket server does NOT have a URL attached");
+		return;
+	}
+	let sessionid = url?.substring(1);
+	let clientaddress: string = "temp";
+	if (req.headers["user-agent"] != undefined) {
+		clientaddress = req.headers["user-agent"];
 	}
 
 	tryRetrieveSession(sessionid) // Attempt to find a session
 	.then((mysession: Session) => {// Begin accepting messages from client
 		console.log("API Accepting messages.");
-		mysession.AddClient(clientaddress);
 
 		// Start recieving network messages
 		clientsocket.on("message", (data: Uint8Array) => {
@@ -176,7 +180,10 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 
 		let sessionid: string = req.params.sessionid;
-		let ip: string = req.ip;
+		let clientaddress: string = req.ip;
+		if (req.headers["user-agent"] != undefined) {
+			clientaddress = req.headers["user-agent"];
+		}
 
 		//create new session
 		let newsession = CreateNewSession(sessionid);
@@ -189,7 +196,7 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 					sessionid: req.params.sessionid, 
 				}
 			);
-			JoinSession(sessionid, ip);
+			JoinSession(sessionid, clientaddress);
 			return; //guard clause
 		}
 
@@ -206,10 +213,13 @@ app.get("/api/join/:sessionid", (req: Request, res: Response) => {
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 		
 		let sessionid: string = req.params.sessionid;
-		let ip: string = req.ip;
+		let clientaddress: string = req.ip;
+		if (req.headers["user-agent"] != undefined) {
+			clientaddress = req.headers["user-agent"];
+		}
 
  		//attempt to join 
-		let success = JoinSession(sessionid, ip);
+		let success = JoinSession(sessionid, clientaddress);
 
 		if (success) {
 			res.status(202).json(
@@ -293,6 +303,6 @@ app.get("/api/close/:sessionid"), (req: Request, res: Response) => {
 }
 
 //Begin the server
-app.listen(API_PORT, () => {
+server.listen(API_PORT, () => {
 	console.log("server started");
 });
