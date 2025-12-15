@@ -167,7 +167,11 @@ function Session() {
 
     useEffect(() => {
         FetchSessionState();
-    },[])
+
+        return () => {
+            sessionSocket.closeSocket();
+        }
+    },[sessionSocket])
 
     return (
     <>
