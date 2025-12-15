@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useState } from 'react'
+import { MouseEvent, useEffect, useState, useRef } from 'react'
 import { Buffer } from 'buffer';
 import Chat from './Chat.tsx'
 import './Chat.css'
@@ -30,7 +30,6 @@ enum DataIdentifier {
 
 var isFetchingSession = false;
 var hasFetchedSession = false;
-var sessionSocket = new useSocket();
 //FetchSession functionality
 async function FetchSession(sessionid: string): Promise<FetchSessionResponse> {
 
@@ -78,6 +77,9 @@ function Session() {
     const [, setErrorMsg] = useState<string>();
 
     const [messageBuffer, setmessageBuffer] = useState<Message[]>([]);
+
+    const socketRef = useRef(new useSocket());
+    const sessionSocket = socketRef.current; // Use this variable everywhere
 
     // Handle Errors
     async function HandleError(errorType: string) {
