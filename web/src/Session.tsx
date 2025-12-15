@@ -167,7 +167,7 @@ function Session() {
 
     useEffect(() => {
         FetchSessionState();
-    })
+    },[])
 
     return (
     <>
