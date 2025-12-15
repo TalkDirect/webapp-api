@@ -133,9 +133,7 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 
 			// Send out data to the sockets that didn't come from the original socket
 			socket.clients.forEach(client => {
-				if (client != clientsocket) {
-					client.send(data);
-				}
+				client.send(data);
 			});
 		})
 
@@ -284,7 +282,7 @@ app.get("/api/close/:sessionid"), (req: Request, res: Response) => {
  		//attempt to join 
 		let session = RetrieveSession(sessionid);
 
-		if (session && ip == session.RetrieveLastClient()) {
+		if (session) {
 			RemoveSession(sessionid);
 			res.status(202).json(
 				{

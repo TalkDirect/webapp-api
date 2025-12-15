@@ -153,7 +153,7 @@ function Session() {
         const clientMessage = formJson['client-message'] as string;
 
         // First add this message as a new chat
-        PushChatBuffer(clientMessage);
+        //PushChatBuffer(clientMessage);
 
         // Start to package together a buffer of bits to send off
         let headerBuffer:Buffer = Buffer.allocUnsafe(1);
