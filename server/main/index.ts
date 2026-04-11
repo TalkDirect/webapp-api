@@ -133,7 +133,6 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 			else if (dataID == DataIdentifier.FILE) { // Handling File Payload (I thiink think the server has to do anything special tbh)
 				console.log("Received a file sent by:" + clientaddress)
 				socket.clients.forEach(client => {
-					if (client.url != clientsocket.url)
 						client.send(data);
 				});
 			}
