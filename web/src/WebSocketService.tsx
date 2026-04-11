@@ -38,12 +38,13 @@ export class useSocket {
 
             switch (dataID) {
                 case DataIdentifier.FILE:   // We got a File, make a zip file and download it automatically
-                    const blob = new Blob(Event.data);
-                    blob.slice(1);
+                    const fileContent = socketBuffer.slice(1);
+                    const blob = new Blob([fileContent], { type: 'application/octet-stream' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
+
                     link.href = url;
-                    link.download = "my-file.zip";
+                    link.download = "talkdirect-download.zip";
                     link.click();                    
                     return; 
                 case DataIdentifier.STRING:
