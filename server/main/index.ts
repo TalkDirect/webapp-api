@@ -2,6 +2,7 @@ import express, { Express, Request, Response, NextFunction } from "express";
 import websocket, { WebSocket, WebSocketServer, RawData } from "ws";
 import http, { IncomingMessage } from "http";
 import { Session } from "./modules/Session";
+import { Cipher } from "crypto";
 
 const CORS_ORIGINS = "*" //"http://localhost:5173"
 const CORS_METHODS = "POST, GET"
@@ -110,7 +111,7 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 		return;
 	}
 	let sessionid = url?.substring(1);
-	let clientaddress: string = url;
+	let clientaddress: string = crypto.randomUUID();
 
 	tryRetrieveSession(sessionid) // Attempt to find a session
 	.then((mysession: Session) => {// Begin accepting messages from client
@@ -124,16 +125,18 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 				// This also doesn't work properly, i need to come up with something better
 				const stringMessage = new TextDecoder().decode(data.subarray(1));
 				console.log(stringMessage);
+				// Send out data to the sockets that didn't come from the original socket
+				socket.clients.forEach(client => {
+					client.send(data);
+				});
 			}
 			else if (dataID == DataIdentifier.FILE) { // Handling File Payload (I thiink think the server has to do anything special tbh)
 				console.log("Received a file sent by:" + clientaddress)
+				socket.clients.forEach(client => {
+					if (client.url != clientsocket.url)
+						client.send(data);
+				});
 			}
-
-			// Send out data to the sockets that didn't come from the original socket
-			socket.clients.forEach(client => {
-				if (client.url != clientsocket.url)
-				client.send(data);
-			});
 		})
 
 		clientsocket.on("close", () => {
@@ -177,7 +180,7 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 
 		let sessionid: string = req.params.sessionid;
-		let clientaddress: string = req.ip;
+		let clientaddress: string = crypto.randomUUID();;
 
 		//create new session
 		let newsession = CreateNewSession(sessionid);
@@ -207,7 +210,7 @@ app.get("/api/join/:sessionid", (req: Request, res: Response) => {
 	if (req.params.sessionid !== undefined && req.ip !== undefined) {
 		
 		let sessionid: string = req.params.sessionid;
-		let clientaddress: string = req.ip;
+		let clientaddress: string = crypto.randomUUID();;
 
  		//attempt to join 
 		let success = JoinSession(sessionid, clientaddress);
