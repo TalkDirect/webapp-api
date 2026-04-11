@@ -44,7 +44,7 @@ export class useSocket {
                     const link = document.createElement('a');
 
                     link.href = url;
-                    link.download = "talkdirect-download.zip";
+                    link.download = "talkdirect-download.txt";
                     link.click();                    
                     return; 
                 case DataIdentifier.STRING:
