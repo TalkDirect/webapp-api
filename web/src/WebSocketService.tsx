@@ -2,9 +2,7 @@ enum DataIdentifier {
 	VIDEO = 0,
 	AUDIO = 1,
 	STRING = 2,
-	ERROR = 3,
-    INKBDUP = 4,
-    INKBDDOWN = 5,
+	FILE = 3,
 };
 
 export class useSocket {
@@ -39,7 +37,15 @@ export class useSocket {
             const dataID = socketBuffer[0];
 
             switch (dataID) {
-                case DataIdentifier.ERROR:    
+                case DataIdentifier.FILE:   // We got a File, make a zip file and download it automatically
+                    const fileData = socketBuffer.subarray(1);
+                    const blob = new Blob(fileData.buffer);
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = "my-file.zip";
+                    link.click();                    
+                    return; 
                 case DataIdentifier.STRING:
                     const stringMessage = new TextDecoder().decode(socketBuffer.subarray(1));
                     callback(stringMessage);
@@ -55,9 +61,12 @@ export class useSocket {
         const DataID = data.at(0);
 
         // If we're planning on sending over a string put it into a byte array; else throw it into a int array (32 bit array)
-        if (DataID == DataIdentifier.STRING || DataID == DataIdentifier.ERROR) {
+        if (DataID == DataIdentifier.STRING) {
             this.socket.send(new Uint8Array(data));
             console.log("Webapp Sending Message to API");
+            return;
+        }
+        else if (DataID == DataIdentifier.FILE) { // For now do not handle Files yet for sending to C++ desktop app
             return;
         }
         const bufferArray = new Uint32Array(data);

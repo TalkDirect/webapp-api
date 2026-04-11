@@ -17,8 +17,7 @@ enum DataIdentifier {
 	VIDEO = 0,
 	AUDIO = 1,
 	STRING = 2,
-	ERROR = 3,
-	INKBD = 4,
+	FILE = 3,
 };
 
 
@@ -111,10 +110,7 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 		return;
 	}
 	let sessionid = url?.substring(1);
-	let clientaddress: string = "temp";
-	if (req.headers["user-agent"] != undefined) {
-		clientaddress = req.headers["user-agent"];
-	}
+	let clientaddress: string = url;
 
 	tryRetrieveSession(sessionid) // Attempt to find a session
 	.then((mysession: Session) => {// Begin accepting messages from client
@@ -124,11 +120,13 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 		clientsocket.on("message", (data: Uint8Array) => {
 			const dataID = data.at(0);
 
-			// Remember that INMSEMOVE's content should be read as a signed integer due to it having negative numbers (acceleration/velocity)			
-			if (dataID == DataIdentifier.STRING || dataID == DataIdentifier.ERROR) { // Turn if statement into to switch statement later			
+			if (dataID == DataIdentifier.STRING) { // Turn if statement into to switch statement later			
 				// This also doesn't work properly, i need to come up with something better
 				const stringMessage = new TextDecoder().decode(data.subarray(1));
 				console.log(stringMessage);
+			}
+			else if (dataID == DataIdentifier.FILE) { // Handling File Payload (I thiink think the server has to do anything special tbh)
+				console.log("Received a file sent by:" + clientaddress)
 			}
 
 			// Send out data to the sockets that didn't come from the original socket
@@ -179,9 +177,6 @@ app.get("/api/host/:sessionid", (req: Request, res: Response) => {
 
 		let sessionid: string = req.params.sessionid;
 		let clientaddress: string = req.ip;
-		if (req.headers["user-agent"] != undefined) {
-			clientaddress = req.headers["user-agent"];
-		}
 
 		//create new session
 		let newsession = CreateNewSession(sessionid);
@@ -212,9 +207,6 @@ app.get("/api/join/:sessionid", (req: Request, res: Response) => {
 		
 		let sessionid: string = req.params.sessionid;
 		let clientaddress: string = req.ip;
-		if (req.headers["user-agent"] != undefined) {
-			clientaddress = req.headers["user-agent"];
-		}
 
  		//attempt to join 
 		let success = JoinSession(sessionid, clientaddress);
