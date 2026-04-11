@@ -38,8 +38,8 @@ export class useSocket {
 
             switch (dataID) {
                 case DataIdentifier.FILE:   // We got a File, make a zip file and download it automatically
-                    const fileData = socketBuffer.subarray(1);
-                    const blob = new Blob(fileData.buffer);
+                    const blob = new Blob(Event.data);
+                    blob.slice(1);
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
