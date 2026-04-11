@@ -131,6 +131,7 @@ socket.on("connection", (clientsocket: WebSocket, req: IncomingMessage) => {
 
 			// Send out data to the sockets that didn't come from the original socket
 			socket.clients.forEach(client => {
+				if (client.url != clientsocket.url)
 				client.send(data);
 			});
 		})
