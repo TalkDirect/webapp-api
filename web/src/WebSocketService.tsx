@@ -60,7 +60,6 @@ export class useSocket {
         // First byte of data will ALWAYS be Data Identifier
         if (this.socket == null) return;
         const DataID = data.at(0);
-        data[0] = DataIdentifier.FILE;
 
         // If we're planning on sending over a string put it into a byte array; else throw it into a int array (32 bit array)
         if (DataID == DataIdentifier.STRING) {
